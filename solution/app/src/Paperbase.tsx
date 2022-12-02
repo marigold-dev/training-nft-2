@@ -7,10 +7,12 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import * as React from "react";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { UserContext, UserContextType } from "./App";
+import BidsPage from "./BidsPage";
 import Header from "./Header";
 import MintPage from "./MintPage";
 import Navigator, { PagesPaths } from "./Navigator";
 import Welcome from "./Welcome";
+import WineCataloguePage from "./WineCataloguePage";
 
 function Copyright() {
   return (
@@ -219,6 +221,9 @@ export default function Paperbase() {
             }
           >
             <Route index element={<Welcome />} />
+            <Route path={PagesPaths.CATALOG} element={<WineCataloguePage />} />
+
+            <Route path={PagesPaths.BIDS} element={<BidsPage />} />
             <Route path={PagesPaths.MINT} element={<MintPage />} />
           </Route>
         </Routes>

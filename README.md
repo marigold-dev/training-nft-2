@@ -4,113 +4,26 @@ Training n°2 for NFT marketplace
 
 ![https://img.etimg.com/thumb/msid-71286763,width-1070,height-580,overlay-economictimes/photo.jpg](https://img.etimg.com/thumb/msid-71286763,width-1070,height-580,overlay-economictimes/photo.jpg)
 
-# :wine_glass: Wine marketplace
+This time we are gone add the ability to buy and sell NFT at a price
 
-We are going to build a Wine marketplace.
-You can play with the final demo here : [https://demo.winefactory.marigold.dev/](https://demo.winefactory.marigold.dev/)
+# :arrow_forward: Go forward
 
-Plan of the training course :
+Keep your code from previous training or get the solution [here](https://github.com/marigold-dev/training-nft-1/tree/main/solution)
 
-- NFT 1 : use FA2 nft template to understand the basics
-- NFT 2 : finish FA2 nft marketplace
-- NFT 3 : use FA2 single asset template to build another kind of marketplace
-- NFT 4 : use FA2 multi asset template to build last complex kind of marketplace
+> If you clone/fork a repo, rebuild in local
 
-![](https://i.imgflip.com/4dpglt.png)
-
-## :performing_arts: What are NFTs?
-
-A non-fungible token is a unique and non-interchangeable unit of data stored on a digital ledger. NFTs can be used to represent easily-reproducible items such as photos, videos, audio, and other types of digital files as unique items, and use blockchain technology to establish a verified and public proof of ownership.
-
-## :open_file_folder: What is IPFS?
-
-The InterPlanetary File System is a protocol and peer-to-peer network for storing and sharing data in a distributed file system. IPFS uses content-addressing to uniquely identify each file in a global namespace connecting all computing devices. In this tutorial, we will be using [pinata](https://www.pinata.cloud/) (free developer plan) to store the metadata for NFTs. An alternative would be to install a local IPFS node or an API gateway backend with usage quota.
-
-## :scroll: Smart Contracts
-
-We will use two contracts for the marketplace. First will be the token contract. On Tezos FA2 is the standard for Non-fungible Token contracts. We will be using the [template provided by Ligo](https://packages.ligolang.org/package/@ligo/fa) to build out the Token Contract. The template contains the basic entry points for building a Fungible or Non-fungible token including
-
-- Transfer
-- Balance_of
-- Update_operators
-
-On a second time, we will import this contract into a second one that will be the marketplace unique contract. This contract will bring missing feature as :
-
-- Mint
-- Buy
-- Sell
-
-# :memo: Prerequisites
-
-Please install this software first on your machine :
-
-- [ ] (Recommended) [VS Code](https://code.visualstudio.com/download) : as text editor
-- [ ] [npm](https://nodejs.org/en/download/) : we will use a typescript React client app
-- [ ] (Recommended) [yarn](https://classic.yarnpkg.com/lang/en/docs/install/#windows-stable) : because yet another package manager (https://www.geeksforgeeks.org/difference-between-npm-and-yarn/)
-- [ ] [taqueria](https://github.com/ecadlabs/taqueria) : Tezos Dapp project tooling (version >= 0.24.2)
-- [ ] (Optional) [taqueria VS Code extension](https://marketplace.visualstudio.com/items?itemName=ecadlabs.taqueria-vscode) : visualize your project and execute tasks
-- [ ] (Recommended) [ligo VS Code extension](https://marketplace.visualstudio.com/items?itemName=ligolang-publish.ligo-vscode) : for smart contract highlighting, completion, etc ..
-- [ ] (Recommended) [Temple wallet](https://templewallet.com/) : an easy to use Tezos wallet in your browser (Or any other one with ghostnet support)
+```bash
+npm i
+cd ./app
+yarn install
+cd ..
+```
 
 # :scroll: Smart contract
 
-We will use taqueria to shape the project structure, then create the nft marketplace contract importing the `ligo/fa` libray
-
-## Taq'ify your project
-
-```bash
-taq init training
-cd training
-taq install @taqueria/plugin-ligo
-```
-
-> :warning: HACK note : create a dummy esy.json file with `{}` content on it. I will be used by the ligo package installer to not override the default package.json file of taqueria
-
-```bash
-echo "{}" > esy.json
-```
-
-Your project is ready
-
-## FA2 contract
-
-We will rely on Ligo FA library. To understand in detail how works asset on Tezos, please read below notes
-
-> Note : FA2 standard can be found here => [https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-12/tzip-12.md](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-12/tzip-12.md)
-> Additional contract metadata can be added to easier display token picture,etc ... this is describe on TZIP-21 standard here [https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-21/tzip-21.md](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-21/tzip-21.md)
-
-> Note : Generic Contract metadata reference => [https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-16/tzip-16.md](https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-16/tzip-16.md)
-
-Install the ligo fa library locally
-
-```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:0.56.0 taq ligo --command "install @ligo/fa"
-```
-
-## NFT marketplace contract
-
-Create the nft marketplace contract with taqueria
-
-```bash
-taq create contract nft.jsligo
-```
-
-Remove the default code and paste this code instead
+Add these code sections on your `nft.jsligo` smart contract
 
 ```jsligo
-#import "@ligo/fa/lib/fa2/nft/NFT.jsligo" "NFT"
-
-/* ERROR MAP FOR UI DISPLAY or TESTS
-    const errorMap : map<string,string> = Map.literal(list([
-      ["0", "Enter a positive and not null amount"],
-      ["1", "Operation not allowed, you need to be administrator"],
-      ["2", "You cannot sell more than your current balance"],
-      ["3", "Cannot find the bid you entered for buying"],
-      ["4", "You entered a quantity to buy than is more than the bid offer quantity"],
-      ["5", "Not enough funds, you need to pay at least quantity * bid price to get the tokens"],
-      ["6", "Cannot find the contract relative to implicit address"],
-    ]));
-*/
 
 type bid = {
   owner : address,
@@ -119,45 +32,40 @@ type bid = {
 
 type storage =
   {
-    administrator: address,
+...
     bids: map<nat,bid>,  //user sell a bid
-    ledger: NFT.Ledger.t,
-    metadata: NFT.Metadata.t,
-    token_metadata: NFT.TokenMetadata.t,
-    operators: NFT.Operators.t,
-    token_ids : set<NFT.Storage.token_id>
+...
   };
 
-type ret = [list<operation>, storage];
+...
 
 type parameter =
-  | ["Mint", nat,bytes,bytes,bytes,bytes] //token_id, name , description  ,symbol , ipfsUrl
+...
   | ["Buy", nat, address]  //buy token_id at a seller offer price
   | ["Sell", nat, nat]  //sell token_id at a price
-  | ["Transfer", NFT.transfer]
-  | ["Balance_of", NFT.balance_of]
-  | ["Update_operators", NFT.update_operators];
-
+...
 
 const main = ([p, s]: [parameter,storage]): ret =>
-    match(p, {
-     Mint: (p: [nat,bytes,bytes,bytes,bytes]) => [list([]),s],
+...
      Buy: (p : [nat,address]) => [list([]),s],
      Sell: (p : [nat,nat]) => [list([]),s],
-     Transfer: (p: NFT.transfer) => [list([]),s],
-     Balance_of: (p: NFT.balance_of) => [list([]),s],
-     Update_operators: (p: NFT.update_operator) => [list([]),s],
-     });
+...
 ```
 
 Explanations :
 
-- the first line `#import "@ligo/fa/lib/fa2/nft/NFT.jsligo" "NFT"` imports the ligo FA library
-- `storage` definition is an extension of the imported library storage `(NFT.Ledger.t,NFT.Metadata.t,NFT.TokenMetadata.t,NFT.Operators.t,set<NFT.Storage.token_id>)`
-- `storage` has more fields to support an `administrator` and `bids`, a map of bids for each nft sold by an owner
 - a `bid` is a nft sale at a price owned by someone
-- `parameter` definition is an extension of the imported library entrypoints `(NFT.transfer,NFT.balance_of,NFT.update_operators)`
-- `parameter` has more entrypoints to allow to create nfts `Mint` and two other for selling/buying `(Sell,Buy)`
+- `storage` has a new field to support `bids`, a map of bids for each nft sold by an owner
+- `parameter` has more entrypoints for selling/buying `(Sell,Buy)`
+- `main` function exposes the new entrypoints
+
+Update also the initial storage on file `nft.storages.jsligo`
+
+```jsligo
+...
+    bids: Map.empty as map<nat,bid>,
+...
+```
 
 Compile the contract
 
@@ -165,141 +73,104 @@ Compile the contract
 TAQ_LIGO_IMAGE=ligolang/ligo:0.56.0 taq compile nft.jsligo
 ```
 
-> Note : to be sure that taqueria will use ligo v0.56 that contains the ligo package installer w/ Docker fix, we set the env var `TAQ_LIGO_IMAGE`
+## :credit_card: Sell at an offer price
 
-The contract compiles, now let's write `Transfer,Balance_of,Update_operators` entrypoints. We will do a passthrough call to the underlying library. On main function, replace the default case code by this one
-
-```jsligo
-     Transfer: (p: NFT.transfer) => {
-      const ret2 : [list<operation>, NFT.storage] = NFT.transfer(p,{ledger:s.ledger,metadata:s.metadata,token_metadata:s.token_metadata,operators:s.operators,token_ids : s.token_ids});
-      return [ret2[0],{...s,ledger:ret2[1].ledger,metadata:ret2[1].metadata,token_metadata:ret2[1].token_metadata,operators:ret2[1].operators,token_ids:ret2[1].token_ids}];
-     },
-     Balance_of: (p: NFT.balance_of) => {
-      const ret2 : [list<operation>, NFT.storage] = NFT.balance_of(p,{ledger:s.ledger,metadata:s.metadata,token_metadata:s.token_metadata,operators:s.operators,token_ids : s.token_ids});
-      return [ret2[0],{...s,ledger:ret2[1].ledger,metadata:ret2[1].metadata,token_metadata:ret2[1].token_metadata,operators:ret2[1].operators,token_ids:ret2[1].token_ids}];
-      },
-     Update_operators: (p: NFT.update_operator) => {
-      const ret2 : [list<operation>, NFT.storage] = NFT.update_ops(p,{ledger:s.ledger,metadata:s.metadata,token_metadata:s.token_metadata,operators:s.operators,token_ids : s.token_ids});
-      return [ret2[0],{...s,ledger:ret2[1].ledger,metadata:ret2[1].metadata,token_metadata:ret2[1].token_metadata,operators:ret2[1].operators,token_ids:ret2[1].token_ids}];
-      }
-```
-
-Explanations :
-
-- the called function is taking the storage type of the library, so we send a partial object from our storage definition to match the type definition
-- the return type contains also the storage type of the library, so we need to reconstruct the storage by copied the modified fields
-
-> Note : Ligo team is working on merging type definitions. You could be able to do `type union` or `merge 2 objects` like in Typescript
-
-Let's add the `Mint` function now. Add the new function, and update the main function
+Let's add the `sell` function. Edit the code sections as below
 
 ```jsligo
-const mint = (token_id : nat, name :bytes, description:bytes ,symbol :bytes, ipfsUrl:bytes, s: storage) : ret => {
+...
 
-   if(Tezos.get_sender() != s.administrator) return failwith("1");
+const sell = (token_id : nat,price: nat, s: storage) : ret => {
 
-   const token_info: map<string, bytes> =
-     Map.literal(list([
-      ["name", name],
-      ["description",description],
-      ["interfaces", (bytes `["TZIP-12"]`)],
-      ["thumbnailUri", ipfsUrl],
-      ["symbol",symbol],
-      ["decimals", (bytes `0`)]
-     ])) as map<string, bytes>;
+  //check balance of seller
+  const sellerBalance = NFT.Storage.get_balance({ledger:s.ledger,metadata:s.metadata,operators:s.operators,token_metadata:s.token_metadata,token_ids : s.token_ids},Tezos.get_source(),token_id);
+  if(sellerBalance != (1 as nat)) return failwith("2");
 
+  //need to allow the contract itself to be an operator on behalf of the seller
+  const newOperators = NFT.Operators.add_operator(s.operators,Tezos.get_source(),Tezos.get_self_address(),token_id);
 
-    const metadata : bytes = bytes
-  `{
-      "name":"FA2 NFT Marketplace",
-      "description":"Example of FA2 implementation",
-      "version":"0.0.1",
-      "license":{"name":"MIT"},
-      "authors":["Marigold<contact@marigold.dev>"],
-      "homepage":"https://marigold.dev",
-      "source":{
-        "tools":["Ligo"],
-        "location":"https://github.com/ligolang/contract-catalogue/tree/main/lib/fa2"},
-      "interfaces":["TZIP-012"],
-      "errors": [],
-      "views": []
-      }` ;
+  //DECISION CHOICE: if bid already exists, we just override it
+  return [list([]) as list<operation>,{...s,bids:Map.add(token_id,{owner : Tezos.get_source(), price : price},s.bids),operators:newOperators}];
+};
 
-    return [list([]) as list<operation>,
-          {...s,
-     ledger: Big_map.add(token_id,s.administrator ,s.ledger) as NFT.Ledger.t,
-     metadata : Big_map.literal(list([["",  bytes `tezos-storage:data`],["data", metadata]])),
-     token_metadata: Big_map.add(token_id, {token_id: token_id,token_info:token_info},s.token_metadata),
-     operators: Big_map.empty as NFT.Operators.t,
-     token_ids : Set.add(token_id,s.token_ids)
-     }]};
+...
 
 const main = ([p, s]: [parameter,storage]): ret =>
-    match(p, {
-     Mint: (p: [nat,bytes,bytes,bytes,bytes]) => mint(p[0],p[1],p[2],p[3],p[4],s),
-     Buy: (p : [nat,address]) => [list([]),s],
-     Sell: (p : [nat,nat]) => [list([]),s],
-     Transfer: (p: NFT.transfer) => [list([]),s],
-     Balance_of: (p: NFT.balance_of) => [list([]),s],
-     Update_operators: (p: NFT.update_operator) => [list([]),s],
-     });
+...
+     Sell: (p : [nat,nat]) => sell(p[0],p[1], s),
+...
+
 ```
 
 Explanations :
 
-- `mint` function will allow you to create a unique NFT. You have to declare the name, description, symbol and ipfsUrl for the picture to display
-- to simplify, we don't manage the increment of the token_id here it will be done by the front end later. We encourage you to manage this counter onchain to avoid overriding and existing nft. There is no rule to allocate a specific number to the token_id but people increment it from 0. Also, there is no rule if you have a burn function to reallocate the token_id to a removed index and just continue the sequence from the greatest index.
-- most of fields are optional except `decimals` that is set to `0`. A unique nft does not have decimals, it is a unit
-- by default, the `quantity` for an nft is `1`, that is why every bottle is unique and we don't need to set a total supply on each nft.
-- if you want to know the `size of the nft collection`, look at `token_ids` size. This is used as a `cache` key index of the `token_metadata` big_map. By definition a big map in Tezos can be access through a key, but you need to know the key, there is no function to return the keyset. This is why we keep trace of all token_id in this set, so we can loop and read/update information on nfts
+- first, we check the balance of the seller, he should have enough token to place an offer
+- the seller will set the nft marketplace smartcontract as operator. The reason is while the buyer will send his money to buy the NFT, the smartcontract will change the nft ownership (it is not interactive with the seller, the martketplace will do it on behalf of the seller based on the offer data)
+- we update the storage to publish the offer
+- adding the call to `sell` function on `main` function is straightforward
 
-> Note : on next training you will implement Sell/Buy entrypoints
+## :credit_card: Buy a bottle on the market
 
-We have finished the smart contract implementation for this first training, let's prepare the deployment to ghostnet.
+Now that we have offers on the market, we are able to buy bottles
 
-Edit the storage file `nft.storageList.jsligo` as it. (:warning: you can change the `administrator` address to your own address or keep `alice`)
+Edit the smart contract to add this feature, as below
 
 ```jsligo
-#include "nft.jsligo"
-const default_storage =
-{
-    administrator: "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" as address,
-    bids: Map.empty as map<nat,bid>,
-    ledger: Big_map.empty as NFT.Ledger.t,
-    metadata: Big_map.empty as NFT.Metadata.t,
-    token_metadata: Big_map.empty as NFT.TokenMetadata.t,
-    operators: Big_map.empty as NFT.Operators.t,
-    token_ids : Set.empty as set<NFT.Storage.token_id>
-  }
-;
+...
+
+const buy = (token_id : nat, seller: address, s: storage) : ret => {
+
+  //search for the bid
+  return match( Map.find_opt(token_id,s.bids) , {
+    None : () => failwith("3"),
+    Some : (bid : bid) => {
+
+      //check if amount have been paid enough
+      if(Tezos.get_amount() < bid.price  * (1 as mutez)) return failwith("5");
+
+      // prepare transfer of XTZ to seller
+      const op = Tezos.transaction(unit,bid.price  * (1 as mutez),Tezos.get_contract_with_error(seller,"6"));
+
+      //transfer tokens from seller to buyer
+      const ledger = NFT.Ledger.transfer_token_from_user_to_user(s.ledger,token_id,seller,Tezos.get_source());
+
+      //remove bid
+      return [list([op]) as list<operation>, {...s, bids : Map.update(token_id,None(),s.bids), ledger : ledger}];
+    }
+  });
+};
+
+...
+
+const main = ([p, s]: [parameter,storage]): ret =>
+...
+     Buy: (p : [nat,address]) => buy(p[0],p[1],s),
+...
 ```
 
-Compile again and deploy to ghostnet
+Explanations :
+
+- first, we search for the offer based on the token_id, if it does not exist, we return an error
+- we check that the amount sent by the buyer is at least equal to the offer price
+- if it is ok, then we transfer the offer price to the seller and we transfer the nft to the buyer
+- finally we remove the offer as it has been executed
+- adding the call to `buy` function on `main` function is straightforward
+
+## Compile and deploy
+
+We have finished the smart contract implementation for this second training, let's prepare the deployment to ghostnet.
+
+Deploy to ghostnet
 
 ```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:0.56.0 taq compile nft.jsligo
-taq install @taqueria/plugin-taquito
 taq deploy nft.tz -e "testing"
 ```
-
-> Note : if it is the first time you use taqueria, I recommend to look at this training first [https://github.com/marigold-dev/training-dapp-1#ghostnet-testnet-wallet](https://github.com/marigold-dev/training-dapp-1#ghostnet-testnet-wallet)
-> For advanced users, just go to .taq/config.json and change the default account to alice settings (publicKey,publicKeyHash,privateKey) and then redeploy
->
-> ```json
-> "accounts": {
->                "taqOperatorAccount": {
->                    "publicKey": "edpkvGfYw3LyB1UcCahKQk4rF2tvbMUk8GFiTuMjL75uGXrpvKXhjn",
->                    "publicKeyHash": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb",
->                    "privateKey": "edsk3QoqBuvdamxouPhin7swCvkQNgq4jP5KZPbwWNnwdZpSpJiEbq"
->                }
->            }
-> ```
 
 ```logs
 ┌──────────┬──────────────────────────────────────┬───────┬──────────────────┬────────────────────────────────┐
 │ Contract │ Address                              │ Alias │ Balance In Mutez │ Destination                    │
 ├──────────┼──────────────────────────────────────┼───────┼──────────────────┼────────────────────────────────┤
-│ nft.tz   │ KT1SeDDNAP5xqwjB8LjKJtL31cKVmg6F4C57 │ nft   │ 0                │ https://ghostnet.ecadinfra.com │
+│ nft.tz   │ KT1F9EV54K7hRgwJKEyq5bxJokr8bTkYyC16 │ nft   │ 0                │ https://ghostnet.ecadinfra.com │
 └──────────┴──────────────────────────────────────┴───────┴──────────────────┴────────────────────────────────┘
 ```
 
@@ -307,57 +178,175 @@ taq deploy nft.tz -e "testing"
 
 # :performing_arts: NFT Marketplace front
 
-## Get the react boilerplate
-
-To win time, we have a boilerplate ready for the UI here : [https://github.com/marigold-dev/training-nft-1/tree/main/reactboilerplate/app](https://github.com/marigold-dev/training-nft-1/tree/main/reactboilerplate/app)
-
-Copy this code into your folder (:warning: assuming you have cloned this repo, and your current path is $REPO/training)
+Generate Typescript classes and go to the frontend to run the server
 
 ```bash
-cp -r ../reactboilerplateapp/ ./app
-```
-
-> Note : if you want to understand how it has been made from scratch look at this training => [https://github.com/marigold-dev/training-dapp-1#construction_worker-dapp](https://github.com/marigold-dev/training-dapp-1#construction_worker-dapp)
-
-Generate the typescript classes from Michelson code to your frontend app and run the server
-
-```bash
-taq install @taqueria/plugin-contract-types
 taq generate types ./app/src
-cd app
-yarn install
+cd ./app
 yarn run start
 ```
 
-You have website ready ! You have :
+## Create the Sale page
 
-- automatic pull from taqueria last deployed contract address at each start
-- login/logout
-- the general layout / navigation
-
-If you try to connect , then you are redirected to inexistent `/mint` path
-
-## Create the Mint Page
-
-Create the Mint Page
+Create the Sale Page
 
 ```bash
-touch ./src/MintPage.tsx
+touch ./src/BidsPage.tsx
 ```
 
 Add this code inside the created file :
 
 ```typescript
+import SellIcon from "@mui/icons-material/Sell";
+import {
+  Avatar,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  TextField,
+} from "@mui/material";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
+import BigNumber from "bignumber.js";
+import { useFormik } from "formik";
 import { useSnackbar } from "notistack";
-import React from "react";
+import React, { Fragment, useEffect } from "react";
+import * as yup from "yup";
 import { UserContext, UserContextType } from "./App";
+import { TransactionInvalidBeaconError } from "./TransactionInvalidBeaconError";
+import { address, nat } from "./type-aliases";
 
-export default function MintPage() {
-  const {} = React.useContext(UserContext) as UserContextType;
+const validationSchema = yup.object({
+  price: yup
+    .number()
+    .required("Price is required")
+    .positive("ERROR: The number must be greater than 0!"),
+});
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+type Bid = {
+  owner: address;
+  price: nat;
+};
+
+export default function BidsPage() {
+  const [selectedTokenId, setSelectedTokenId] = React.useState<number>(0);
+
+  let [bidsTokenIDMap, setBidsTokenIDMap] = React.useState<Map<nat, Bid>>(
+    new Map()
+  );
+  let [ownerTokenIds, setOwnerTokenIds] = React.useState<Set<nat>>(new Set());
+
+  const {
+    nftContrat,
+    nftContratTokenMetadataMap,
+    userAddress,
+    storage,
+    refreshUserContextOnPageReload,
+  } = React.useContext(UserContext) as UserContextType;
 
   const { enqueueSnackbar } = useSnackbar();
+
+  const formik = useFormik({
+    initialValues: {
+      price: 0,
+    },
+    validationSchema: validationSchema,
+    onSubmit: (values) => {
+      console.log("onSubmit: (values)", values, selectedTokenId);
+      sell(selectedTokenId, values.price);
+    },
+  });
+
+  const initPage = async () => {
+    if (storage) {
+      console.log("context is not empty, init page now");
+      ownerTokenIds = new Set();
+      bidsTokenIDMap = new Map();
+
+      await Promise.all(
+        storage.token_ids.map(async (token_id) => {
+          let owner = await storage.ledger.get(token_id);
+          if (owner === userAddress) {
+            ownerTokenIds.add(token_id);
+
+            const ownerBids = await storage.bids.get(token_id);
+            if (ownerBids) bidsTokenIDMap.set(token_id, ownerBids);
+
+            console.log(
+              "found for " +
+                owner +
+                " on token_id " +
+                token_id +
+                " with balance " +
+                1
+            );
+          } else {
+            console.log("skip to next token id");
+          }
+        })
+      );
+      setOwnerTokenIds(new Set(ownerTokenIds)); //force refresh
+      setBidsTokenIDMap(new Map(bidsTokenIDMap)); //force refresh
+    } else {
+      console.log("context is empty, wait for parent and retry ...");
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      console.log("after a storage changed");
+      await initPage();
+    })();
+  }, [storage]);
+
+  useEffect(() => {
+    (async () => {
+      console.log("on Page init");
+      await initPage();
+    })();
+  }, []);
+
+  const sell = async (token_id: number, price: number) => {
+    try {
+      const op = await nftContrat?.methods
+        .sell(
+          BigNumber(token_id) as nat,
+          BigNumber(price * 1000000) as nat //to mutez
+        )
+        .send();
+
+      await op?.confirmation(2);
+
+      enqueueSnackbar(
+        "Wine collection (token_id=" +
+          token_id +
+          ") bid for " +
+          1 +
+          " units at price of " +
+          price +
+          " XTZ",
+        { variant: "success" }
+      );
+
+      refreshUserContextOnPageReload(); //force all app to refresh the context
+    } catch (error) {
+      console.table(`Error: ${JSON.stringify(error, null, 2)}`);
+      let tibe: TransactionInvalidBeaconError =
+        new TransactionInvalidBeaconError(error);
+      enqueueSnackbar(tibe.data_message, {
+        variant: "error",
+        autoHideDuration: 10000,
+      });
+    }
+  };
 
   return (
     <Box
@@ -374,255 +363,124 @@ export default function MintPage() {
       }}
     >
       <Paper sx={{ maxWidth: 936, margin: "auto", overflow: "hidden" }}>
-        //TODO
+        {ownerTokenIds && ownerTokenIds.size != 0 ? (
+          Array.from(ownerTokenIds).map((token_id) => (
+            <Card key={userAddress + "-" + token_id.toString()}>
+              <CardHeader
+                avatar={
+                  <Avatar sx={{ bgcolor: "purple" }} aria-label="recipe">
+                    {token_id.toString()}
+                  </Avatar>
+                }
+                title={
+                  nftContratTokenMetadataMap.get(token_id.toNumber())?.name
+                }
+              />
+
+              <CardContent>
+                {bidsTokenIDMap.get(token_id) ? (
+                  <div>
+                    {"Bid : " +
+                      1 +
+                      " at price " +
+                      bidsTokenIDMap.get(token_id)?.price.dividedBy(1000000)}
+                  </div>
+                ) : (
+                  ""
+                )}
+              </CardContent>
+
+              <CardActions disableSpacing>
+                <form
+                  onSubmit={(values) => {
+                    setSelectedTokenId(token_id.toNumber());
+                    formik.handleSubmit(values);
+                  }}
+                >
+                  <TextField
+                    name="price"
+                    label="price/bottle (XTZ)"
+                    placeholder="Enter a price"
+                    variant="standard"
+                    type="number"
+                    value={formik.values.price}
+                    onChange={formik.handleChange}
+                    error={formik.touched.price && Boolean(formik.errors.price)}
+                    helperText={formik.touched.price && formik.errors.price}
+                  />
+                  <Button type="submit" aria-label="add to favorites">
+                    <SellIcon /> SELL
+                  </Button>
+                </form>
+              </CardActions>
+            </Card>
+          ))
+        ) : (
+          <Fragment />
+        )}
       </Paper>
     </Box>
   );
 }
 ```
 
-Update the navigation routes on the `./src/Paperbase.tsx` file.
-Import the Mintpage at the beginning of the file.
+Explanations :
+
+- the template will display all owned NFTs. Only NFTs belonging to the logged user are selected
+- for each nft, we have a form to make an offer at a price
+- if you do an offer, it calls the `sell` function and the smart contract entrypoint `nftContrat?.methods.sell(BigNumber(token_id) as nat,BigNumber(price * 1000000) as nat).send()`. We multiply the XTZ price by 10^6 because the smartcontract manipulates mutez.
+
+## Update the navigation
+
+Update routes on the `./src/Paperbase.tsx` file.
+Import the Bidspage at the beginning of the file.
 
 ```typescript
-import MintPage from "./MintPage";
+import BidsPage from "./BidsPage";
 ```
 
 and at the end of the file, just add this line after `<Route index element={<Welcome />} />`
 
 ```typescript
-<Route path={PagesPaths.MINT} element={<MintPage />} />
+<Route path={PagesPaths.BIDS} element={<BidsPage />} />
 ```
 
-## Add a form to create the NFT
+## Update the menu bar on the left
 
-Replace `//TODO` by
-
-```html
-<form onSubmit={formik.handleSubmit}>
-  <Stack spacing={2} margin={2} alignContent={"center"}>
-    <h1>Mint your wine collection</h1>
-    <TextField
-      id="standard-basic"
-      name="name"
-      label="name"
-      value={formik.values.name}
-      onChange={formik.handleChange}
-      error={formik.touched.name && Boolean(formik.errors.name)}
-      helperText={formik.touched.name && formik.errors.name}
-      variant="standard"
-    />
-    <TextField
-      id="standard-basic"
-      name="symbol"
-      label="symbol"
-      value={formik.values.symbol}
-      onChange={formik.handleChange}
-      error={formik.touched.symbol && Boolean(formik.errors.symbol)}
-      helperText={formik.touched.symbol && formik.errors.symbol}
-      variant="standard"
-    />
-    <TextField
-      id="standard-basic"
-      name="description"
-      label="description"
-      value={formik.values.description}
-      onChange={formik.handleChange}
-      error={formik.touched.description && Boolean(formik.errors.description)}
-      helperText={formik.touched.description && formik.errors.description}
-      variant="standard"
-    />
-
-    <img src={pictureUrl} />
-    <Button variant="contained" component="label" color="primary">
-              <AddCircleOutlined />
-              Upload an image
-              <input
-                type="file"
-                hidden
-                name="data"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const data = e.target.files ? e.target.files[0] : null;
-                  if (data) {
-                    setFile(data);
-                  }
-                  e.preventDefault();
-                }}
-              />
-    </Button>
-    <TextField
-      id="standard-basic"
-      name="token_id"
-      label="token_id"
-      value={formik.values.token_id}
-      disabled
-      variant="standard"
-      type={"number"}
-    />
-    <Button variant="contained" type="submit">
-      Mint
-    </Button>
-  </Stack>
-</form>
-```
-
-Add formik form to your Component
+Edit `Navigator.tsx` file to add an effect if the nft collection is not empty, we display a new menu entry
 
 ```typescript
-const validationSchema = yup.object({
-  name: yup.string().required("Name is required"),
-  description: yup.string().required("Description is required"),
-  symbol: yup.string().required("Symbol is required"),
-});
-
-const formik = useFormik({
-  initialValues: {
-    name: "",
-    description: "",
-    token_id: 0,
-    symbol: "WINE",
-  } as TZIP21TokenMetadata,
-  validationSchema: validationSchema,
-  onSubmit: (values) => {
-    //TODO mint(values);
-  },
-});
-```
-
-Add `pictureUrl` and `setFile` declaration to display the token image after pinning it to IPFS, and to get the upload file on the form
-
-```typescript
-const [pictureUrl, setPictureUrl] = useState<string>("");
-const [file, setFile] = useState<File | null>(null);
-```
-
-fix missing imports
-
-```typescript
-import { Button, Stack, TextField } from "@mui/material";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
-import { useSnackbar } from "notistack";
-import React, { useState } from "react";
-import { TZIP21TokenMetadata, UserContext, UserContextType } from "./App";
-
-import { AddCircleOutlined } from "@mui/icons-material";
-import { useFormik } from "formik";
-import * as yup from "yup";
-```
-
-## Code the mint function
-
-Add the mint function and uncomment the `//TODO` on the formik `onSubmit` function as below, also add missing imports :
-
-```typescript
-import { BigNumber } from "bignumber.js";
-import { char2Bytes } from "@taquito/utils";
-import { TransactionInvalidBeaconError } from "./TransactionInvalidBeaconError";
-import { bytes, nat } from "./type-aliases";
+...
 import React, { useEffect, useState } from "react";
-
-
-...
-  const formik = useFormik({
-...
- onSubmit: (values) => {
-      mint(values);
-    },
+import SellIcon from "@mui/icons-material/Sell";
 ...
 
-const mint = async (newTokenDefinition: TZIP21TokenMetadata) => {
-  try {
-    //IPFS
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const requestHeaders: HeadersInit = new Headers();
-      requestHeaders.set(
-        "pinata_api_key",
-        `${process.env.REACT_APP_PINATA_API_KEY}`
-      );
-      requestHeaders.set(
-        "pinata_secret_api_key",
-        `${process.env.REACT_APP_PINATA_API_SECRET}`
-      );
-
-      const resFile = await fetch(
-        "https://api.pinata.cloud/pinning/pinFileToIPFS",
-        {
-          method: "post",
-          body: formData,
-          headers: requestHeaders,
-        }
-      );
-
-      const responseJson = await resFile.json();
-      console.log("responseJson", responseJson);
-
-      const thumbnailUri = `ipfs://${responseJson.IpfsHash}`;
-      setPictureUrl(`https://gateway.pinata.cloud/ipfs/${responseJson.IpfsHash}`);
-
-      const op = await nftContrat!.methods
-        .mint(
-          new BigNumber(newTokenDefinition.token_id) as nat,
-          char2Bytes(newTokenDefinition.name!) as bytes,
-          char2Bytes(newTokenDefinition.description!) as bytes,
-          char2Bytes(newTokenDefinition.symbol!) as bytes,
-          char2Bytes(thumbnailUri) as bytes
-        )
-        .send();
-
-      await op.confirmation(2);
-
-      enqueueSnackbar("Wine collection minted", { variant: "success" });
-
-      refreshUserContextOnPageReload(); //force all app to refresh the context
-    }
-  } catch (error) {
-    console.table(`Error: ${JSON.stringify(error, null, 2)}`);
-    let tibe: TransactionInvalidBeaconError = new TransactionInvalidBeaconError(
-      error
-    );
-    enqueueSnackbar(tibe.data_message, {
-      variant: "error",
-      autoHideDuration: 10000,
-    });
-  }
-};
-```
-
-//TODO Explanations :
-
-- on Mint button click, we upload a file and then we call the `pinata API` to push the file to `IPFS`. It returns the hash
-- hash is used in two different ways
-  - https pinata gateway link (or any other ipfs http viewer)
-  - ipfs link for the backend thumbnail url
-- TZIP standard requires to store data in `bytes`. As there is no Michelson function to convert string to bytes (using Micheline data PACK will not work as it alters the final bytes), we do the conversion using `char2Bytes` on the frontend side
-
-> Note : use React to fetch a fresh context in case of page reload, replace useContext line by this one
->
-> ```typescript
-> const {
->   nftContrat,
->   refreshUserContextOnPageReload,
->   storage,
->   nftContratTokenMetadataMap,
-> } = React.useContext(UserContext) as UserContextType;
-> ```
-
-Finally, if you remember on the backend , we said that token_id increment management was done in the ui, so you can write this code. It is not a good security practice as it supposes that the counter is managed on frontend side, but it is ok for demo purpose.
-
-Add this code, everytime you have a new token minted, you increment the counter for the next one
-
-```typescript
 useEffect(() => {
-  (async () => {
-    if (storage && storage.token_ids.length > 0) {
-      formik.setFieldValue("token_id", storage?.token_ids.length);
-    }
-  })();
-}, [storage?.token_ids]);
+
+  if (nftContratTokenMetadataMap && nftContratTokenMetadataMap.size > 0)
+    setCategories([
+      {
+        id: "Trading",
+        children: [
+          {
+            id: "Bottle offers",
+            icon: <SellIcon />,
+            path: "/" + PagesPaths.BIDS,
+          },
+        ],
+      },
+      {
+        id: "Administration",
+        children: [
+          {
+            id: "Mint wine collection",
+            icon: <SettingsIcon />,
+            path: "/" + PagesPaths.MINT,
+          },
+        ],
+      },
+    ]);
+}, [nftContratTokenMetadataMap, userAddress]);
 ```
 
 ## Let's play
@@ -642,68 +500,243 @@ Your picture will be psuhed to IPFS and will display, then you are asked to sign
 - Confirm operation
 - Wait less than 1 minutes until you get the confirmation notification, the page will refresh automatically
 
-To display the list of minted nfts, you can add this html section on React template, before or after the form :
+Now you can see the `Trading` menu and the `Bottle offers` sub menu
 
-```html
-{nftContratTokenMetadataMap.size != 0 ? (
-          Array.from(nftContratTokenMetadataMap!.entries()).map(
-            ([token_id, item]) => (
-              <Card key={token_id.toString()}>
-                <CardHeader
-                  avatar={
-                    <Avatar sx={{ bgcolor: "purple" }} aria-label="recipe">
-                      {token_id}
-                    </Avatar>
-                  }
-                  title={item.name}
-                  subheader={item.symbol}
-                />
-                <CardMedia
-                  component="img"
-                  height="194"
-                  image={item.thumbnailUri?.replace(
-                    "ipfs://",
-                    "https://gateway.pinata.cloud/ipfs/"
-                  )}
-                />
-                <CardContent>
-                  <Typography variant="body2" color="text.secondary">
-                    {item.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            )
-          )
-        ) : (
-          <Fragment />
-        )}
+Click on the sub-menu entry
+
+You are owner of this bottle so you can make an offer on it
+
+- Enter a price offer
+- Click on `SELL` button
+- Wait a bit for the confirmation, then it refreshes and you have an offer attached to your NFT
+
+## Create the Wine Catalogue page
+
+Create the Wine Catalogue page
+
+```bash
+touch ./src/WineCataloguePage.tsx
 ```
 
-Add also missing imports
+Add this code inside the created file :
 
 ```typescript
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import {
   Avatar,
   Button,
   Card,
+  CardActions,
   CardContent,
   CardHeader,
-  CardMedia,
-  Stack,
-  TextField,
-  Typography,
 } from "@mui/material";
-import React, { Fragment, useEffect, useState } from "react";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import BigNumber from "bignumber.js";
+import { useFormik } from "formik";
+import { useSnackbar } from "notistack";
+import React, { Fragment } from "react";
+import * as yup from "yup";
+import { UserContext, UserContextType } from "./App";
+import { TransactionInvalidBeaconError } from "./TransactionInvalidBeaconError";
+import { address, nat } from "./type-aliases";
+
+type BidEntry = [nat, Bid];
+
+type Bid = {
+  owner: address;
+  price: nat;
+};
+
+const validationSchema = yup.object({});
+
+export default function WineCataloguePage() {
+  const {
+    nftContrat,
+    nftContratTokenMetadataMap,
+    refreshUserContextOnPageReload,
+    storage,
+  } = React.useContext(UserContext) as UserContextType;
+  const [selectedBidEntry, setSelectedBidEntry] =
+    React.useState<BidEntry | null>(null);
+
+  const formik = useFormik({
+    initialValues: {},
+    validationSchema: validationSchema,
+    onSubmit: (values) => {
+      console.log("onSubmit: (values)", values, selectedBidEntry);
+      buy(selectedBidEntry!);
+    },
+  });
+  const { enqueueSnackbar } = useSnackbar();
+
+  const buy = async (selectedBidEntry: BidEntry) => {
+    try {
+      const op = await nftContrat?.methods
+        .buy(BigNumber(selectedBidEntry[0]) as nat, selectedBidEntry[1].owner)
+        .send({
+          amount: selectedBidEntry[1].price.toNumber(),
+          mutez: true,
+        });
+
+      await op?.confirmation(2);
+
+      enqueueSnackbar(
+        "Bought " +
+          1 +
+          " unit of Wine collection (token_id:" +
+          selectedBidEntry[0] +
+          ")",
+        {
+          variant: "success",
+        }
+      );
+
+      refreshUserContextOnPageReload(); //force all app to refresh the context
+    } catch (error) {
+      console.table(`Error: ${JSON.stringify(error, null, 2)}`);
+      let tibe: TransactionInvalidBeaconError =
+        new TransactionInvalidBeaconError(error);
+      enqueueSnackbar(tibe.data_message, {
+        variant: "error",
+        autoHideDuration: 10000,
+      });
+    }
+  };
+
+  return (
+    <Box
+      component="main"
+      sx={{
+        flex: 1,
+        py: 6,
+        px: 4,
+        bgcolor: "#eaeff1",
+        backgroundImage:
+          "url(https://en.vinex.market/skin/default/images/banners/home/new/banner-1180.jpg)",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+      }}
+    >
+      <Paper sx={{ maxWidth: 936, margin: "auto", overflow: "hidden" }}>
+        {storage?.bids && storage?.bids.size != 0 ? (
+          Array.from(storage?.bids.entries()).map(([token_id, bid]) => (
+            <Card key={bid.owner + "-" + token_id.toString()}>
+              <CardHeader
+                avatar={
+                  <Avatar sx={{ bgcolor: "purple" }} aria-label="recipe">
+                    {token_id.toString()}
+                  </Avatar>
+                }
+                title={
+                  nftContratTokenMetadataMap.get(token_id.toNumber())?.name
+                }
+                subheader={"seller : " + bid.owner}
+              />
+
+              <CardContent>
+                <div>
+                  {"Bid : " + 1 + " at price " + bid.price.dividedBy(1000000)}
+                </div>
+              </CardContent>
+
+              <CardActions disableSpacing>
+                <form
+                  onSubmit={(values) => {
+                    setSelectedBidEntry([token_id, bid]);
+                    formik.handleSubmit(values);
+                  }}
+                >
+                  <Button type="submit" aria-label="add to favorites">
+                    <ShoppingCartIcon /> BUY
+                  </Button>
+                </form>
+              </CardActions>
+            </Card>
+          ))
+        ) : (
+          <Fragment />
+        )}
+      </Paper>
+    </Box>
+  );
+}
 ```
 
-Now you can see all NFTs
+## Update the navigation
+
+Update routes on the `./src/Paperbase.tsx` file.
+Import the WineCataloguePage at the beginning of the file.
+
+```typescript
+import WineCataloguePage from "./WineCataloguePage";
+```
+
+and at the end of the file, just add this line after `<Route index element={<Welcome />} />`
+
+```typescript
+<Route path={PagesPaths.CATALOG} element={<WineCataloguePage />} />
+```
+
+## Update the menu bar on the left
+
+Edit `Navigator.tsx` file to replace the previous effect, we add another menu entry
+
+```typescript
+useEffect(() => {
+  if (nftContratTokenMetadataMap && nftContratTokenMetadataMap.size > 0)
+    setCategories([
+      {
+        id: "Trading",
+        children: [
+          {
+            id: "Wine catalogue",
+            icon: <WineBarIcon />,
+            path: "/" + PagesPaths.CATALOG,
+          },
+          {
+            id: "Bottle offers",
+            icon: <SellIcon />,
+            path: "/" + PagesPaths.BIDS,
+          },
+        ],
+      },
+      {
+        id: "Administration",
+        children: [
+          {
+            id: "Mint wine collection",
+            icon: <SettingsIcon />,
+            path: "/" + PagesPaths.MINT,
+          },
+        ],
+      },
+    ]);
+}, [nftContratTokenMetadataMap, userAddress]);
+```
+
+## Let's play
+
+Now you can see on `Trading` menu the `Wine catalogue` sub menu
+
+Click on the sub-menu entry
+
+As you are connected with the administrator you can see your own unique offer on the market
+
+- Disconnect from your user and connect with another account (who has enough XTZ to buy the bottle)
+- The logged buyer can see that alice is selling a bottle
+- Buy the bottle while clicking on `BUY` button
+- Wait for the confirmation, then the offer is removed from the market
+- Click on `bottle offers` sub menu
+- You are now the owner of this bottle, you can resell it at your own price, etc ...
 
 # :palm_tree: Conclusion :sun_with_face:
 
-You are able to create an NFT collection marketplace from the ligo library.
+You were able to create an NFT collection marketplace from the ligo library, now you can buy or sell nft at your own price.
+This concludes the nft training
 
-On next, training, you will add the Buy/Sell function to your smart contract and update the frontend to play with it
+On next training, you will see another kind of NFT called `single asset`. Instead of creating x token types, you will be authorize to create only 1 token_id 0, on the other side, you can mint a quantity n of this token.
 
-[:arrow_right: NEXT](https://github.com/marigold-dev/training-nft-1)
+[:arrow_right: NEXT](https://github.com/marigold-dev/training-nft-3)
 
 //TODO pictures to include everywhere

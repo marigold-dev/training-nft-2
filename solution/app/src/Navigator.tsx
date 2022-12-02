@@ -1,5 +1,7 @@
+import SellIcon from "@mui/icons-material/Sell";
 import SettingsIcon from "@mui/icons-material/Settings";
 import StorefrontIcon from "@mui/icons-material/Storefront";
+import WineBarIcon from "@mui/icons-material/WineBar";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Drawer, { DrawerProps } from "@mui/material/Drawer";
@@ -8,7 +10,7 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { UserContext, UserContextType } from "./App";
 
@@ -63,6 +65,37 @@ export default function Navigator(props: DrawerProps) {
       ],
     },
   ]);
+
+  useEffect(() => {
+    if (nftContratTokenMetadataMap && nftContratTokenMetadataMap.size > 0)
+      setCategories([
+        {
+          id: "Trading",
+          children: [
+            {
+              id: "Wine catalogue",
+              icon: <WineBarIcon />,
+              path: "/" + PagesPaths.CATALOG,
+            },
+            {
+              id: "Bottle offers",
+              icon: <SellIcon />,
+              path: "/" + PagesPaths.BIDS,
+            },
+          ],
+        },
+        {
+          id: "Administration",
+          children: [
+            {
+              id: "Mint wine collection",
+              icon: <SettingsIcon />,
+              path: "/" + PagesPaths.MINT,
+            },
+          ],
+        },
+      ]);
+  }, [nftContratTokenMetadataMap, userAddress]);
 
   return (
     <Drawer variant="permanent" {...other}>
