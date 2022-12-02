@@ -1,13 +1,8 @@
-# training-nft-1
+# training-nft-2
 
-Training n°1 for NFT marketplace
+Training n°2 for NFT marketplace
 
-Introduction : Business objects managed by a blockchain are called `assets`. On Tezos you will find the term `Financial Asset`.
-Here below different categorization of assets.
-
-![](http://jingculturecommerce.com/wp-content/uploads/2021/03/nft-assets-1024x614.jpg)
-
-<PHOTO hacker wine here>
+![https://img.etimg.com/thumb/msid-71286763,width-1070,height-580,overlay-economictimes/photo.jpg](https://img.etimg.com/thumb/msid-71286763,width-1070,height-580,overlay-economictimes/photo.jpg)
 
 # :wine_glass: Wine marketplace
 

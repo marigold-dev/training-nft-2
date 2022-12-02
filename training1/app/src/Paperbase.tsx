@@ -8,7 +8,8 @@ import * as React from "react";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import { UserContext, UserContextType } from "./App";
 import Header from "./Header";
-import Navigator from "./Navigator";
+import MintPage from "./MintPage";
+import Navigator, { PagesPaths } from "./Navigator";
 import Welcome from "./Welcome";
 
 function Copyright() {
@@ -218,6 +219,7 @@ export default function Paperbase() {
             }
           >
             <Route index element={<Welcome />} />
+            <Route path={PagesPaths.MINT} element={<MintPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
