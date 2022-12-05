@@ -485,7 +485,7 @@ useEffect(() => {
 
 ## Let's play
 
-1. Connect with your wallet an choose `alice` account (or the administrator you set on the smart contract earlier). You are redirected to the Administration /mint page as there is no nft minted yet
+1. Connect with your wallet an choose `alice` account (or one of the administrators you set on the smart contract earlier). You are redirected to the Administration /mint page as there is no nft minted yet
 2. Enter these values on the form for example :
 
 - name : Saint Emilion - Franc la Rose
@@ -721,7 +721,7 @@ Now you can see on `Trading` menu the `Wine catalogue` sub menu
 
 Click on the sub-menu entry
 
-As you are connected with the administrator you can see your own unique offer on the market
+As you are connected with the default administrator you can see your own unique offer on the market
 
 - Disconnect from your user and connect with another account (who has enough XTZ to buy the bottle)
 - The logged buyer can see that alice is selling a bottle
