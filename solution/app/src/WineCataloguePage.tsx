@@ -113,7 +113,11 @@ export default function WineCataloguePage() {
 
               <CardContent>
                 <div>
-                  {"Bid : " + 1 + " at price " + bid.price.dividedBy(1000000)}
+                  {"Bid : " +
+                    1 +
+                    " at price " +
+                    bid.price.dividedBy(1000000) +
+                    " XTZ/bottle"}
                 </div>
               </CardContent>
 
