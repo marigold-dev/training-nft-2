@@ -32,15 +32,15 @@ interface TabPanelProps {
   value: number;
 }
 
-type Bid = {
+type Offer = {
   owner: address;
   price: nat;
 };
 
-export default function BidsPage() {
+export default function OffersPage() {
   const [selectedTokenId, setSelectedTokenId] = React.useState<number>(0);
 
-  let [bidsTokenIDMap, setBidsTokenIDMap] = React.useState<Map<nat, Bid>>(
+  let [offersTokenIDMap, setOffersTokenIDMap] = React.useState<Map<nat, Offer>>(
     new Map()
   );
   let [ownerTokenIds, setOwnerTokenIds] = React.useState<Set<nat>>(new Set());
@@ -70,7 +70,7 @@ export default function BidsPage() {
     if (storage) {
       console.log("context is not empty, init page now");
       ownerTokenIds = new Set();
-      bidsTokenIDMap = new Map();
+      offersTokenIDMap = new Map();
 
       await Promise.all(
         storage.token_ids.map(async (token_id) => {
@@ -78,8 +78,8 @@ export default function BidsPage() {
           if (owner === userAddress) {
             ownerTokenIds.add(token_id);
 
-            const ownerBids = await storage.bids.get(token_id);
-            if (ownerBids) bidsTokenIDMap.set(token_id, ownerBids);
+            const ownerOffers = await storage.offers.get(token_id);
+            if (ownerOffers) offersTokenIDMap.set(token_id, ownerOffers);
 
             console.log(
               "found for " +
@@ -95,7 +95,7 @@ export default function BidsPage() {
         })
       );
       setOwnerTokenIds(new Set(ownerTokenIds)); //force refresh
-      setBidsTokenIDMap(new Map(bidsTokenIDMap)); //force refresh
+      setOffersTokenIDMap(new Map(offersTokenIDMap)); //force refresh
     } else {
       console.log("context is empty, wait for parent and retry ...");
     }
@@ -129,7 +129,7 @@ export default function BidsPage() {
       enqueueSnackbar(
         "Wine collection (token_id=" +
           token_id +
-          ") bid for " +
+          ") offer for " +
           1 +
           " units at price of " +
           price +
@@ -179,12 +179,13 @@ export default function BidsPage() {
               />
 
               <CardContent>
-                {bidsTokenIDMap.get(token_id) ? (
+                {offersTokenIDMap.get(token_id) ? (
                   <div>
-                    {"Bid : " +
+                    {"Offer : " +
                       1 +
                       " at price " +
-                      bidsTokenIDMap.get(token_id)?.price.dividedBy(1000000)}
+                      offersTokenIDMap.get(token_id)?.price.dividedBy(1000000) +
+                      " XTZ/bottle"}
                   </div>
                 ) : (
                   ""

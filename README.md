@@ -25,7 +25,7 @@ Add these code sections on your `nft.jsligo` smart contract
 
 ```jsligo
 
-type bid = {
+type offer = {
   owner : address,
   price : nat
 };
@@ -33,7 +33,7 @@ type bid = {
 type storage =
   {
 ...
-    bids: map<nat,bid>,  //user sell a bid
+    offers: map<nat,offer>,  //user sells an offer
 ...
   };
 
@@ -54,8 +54,8 @@ const main = ([p, s]: [parameter,storage]): ret =>
 
 Explanations :
 
-- a `bid` is a nft sale at a price owned by someone
-- `storage` has a new field to support `bids`, a map of bids for each nft sold by an owner
+- an `offer` is a nft sale at a price owned by someone
+- `storage` has a new field to support `offers`, a map of offers for each nft sold by an owner
 - `parameter` has more entrypoints for selling/buying `(Sell,Buy)`
 - `main` function exposes the new entrypoints
 
@@ -63,7 +63,7 @@ Update also the initial storage on file `nft.storages.jsligo`
 
 ```jsligo
 ...
-    bids: Map.empty as map<nat,bid>,
+    offers: Map.empty as map<nat,offer>,
 ...
 ```
 
@@ -89,8 +89,8 @@ const sell = (token_id : nat,price: nat, s: storage) : ret => {
   //need to allow the contract itself to be an operator on behalf of the seller
   const newOperators = NFT.Operators.add_operator(s.operators,Tezos.get_source(),Tezos.get_self_address(),token_id);
 
-  //DECISION CHOICE: if bid already exists, we just override it
-  return [list([]) as list<operation>,{...s,bids:Map.add(token_id,{owner : Tezos.get_source(), price : price},s.bids),operators:newOperators}];
+  //DECISION CHOICE: if offer already exists, we just override it
+  return [list([]) as list<operation>,{...s,offers:Map.add(token_id,{owner : Tezos.get_source(), price : price},s.offers),operators:newOperators}];
 };
 
 ...
@@ -120,22 +120,22 @@ Edit the smart contract to add this feature, as below
 
 const buy = (token_id : nat, seller: address, s: storage) : ret => {
 
-  //search for the bid
-  return match( Map.find_opt(token_id,s.bids) , {
+  //search for the offer
+  return match( Map.find_opt(token_id,s.offers) , {
     None : () => failwith("3"),
-    Some : (bid : bid) => {
+    Some : (offer : offer) => {
 
       //check if amount have been paid enough
-      if(Tezos.get_amount() < bid.price  * (1 as mutez)) return failwith("5");
+      if(Tezos.get_amount() < offer.price  * (1 as mutez)) return failwith("5");
 
       // prepare transfer of XTZ to seller
-      const op = Tezos.transaction(unit,bid.price  * (1 as mutez),Tezos.get_contract_with_error(seller,"6"));
+      const op = Tezos.transaction(unit,offer.price  * (1 as mutez),Tezos.get_contract_with_error(seller,"6"));
 
       //transfer tokens from seller to buyer
       const ledger = NFT.Ledger.transfer_token_from_user_to_user(s.ledger,token_id,seller,Tezos.get_source());
 
-      //remove bid
-      return [list([op]) as list<operation>, {...s, bids : Map.update(token_id,None(),s.bids), ledger : ledger}];
+      //remove offer
+      return [list([op]) as list<operation>, {...s, offers : Map.update(token_id,None(),s.offers), ledger : ledger}];
     }
   });
 };
@@ -191,7 +191,7 @@ yarn run start
 Create the Sale Page
 
 ```bash
-touch ./src/BidsPage.tsx
+touch ./src/OffersPage.tsx
 ```
 
 Add this code inside the created file :
@@ -231,15 +231,15 @@ interface TabPanelProps {
   value: number;
 }
 
-type Bid = {
+type Offer = {
   owner: address;
   price: nat;
 };
 
-export default function BidsPage() {
+export default function OffersPage() {
   const [selectedTokenId, setSelectedTokenId] = React.useState<number>(0);
 
-  let [bidsTokenIDMap, setBidsTokenIDMap] = React.useState<Map<nat, Bid>>(
+  let [offersTokenIDMap, setOffersTokenIDMap] = React.useState<Map<nat, Offer>>(
     new Map()
   );
   let [ownerTokenIds, setOwnerTokenIds] = React.useState<Set<nat>>(new Set());
@@ -269,7 +269,7 @@ export default function BidsPage() {
     if (storage) {
       console.log("context is not empty, init page now");
       ownerTokenIds = new Set();
-      bidsTokenIDMap = new Map();
+      offersTokenIDMap = new Map();
 
       await Promise.all(
         storage.token_ids.map(async (token_id) => {
@@ -277,8 +277,8 @@ export default function BidsPage() {
           if (owner === userAddress) {
             ownerTokenIds.add(token_id);
 
-            const ownerBids = await storage.bids.get(token_id);
-            if (ownerBids) bidsTokenIDMap.set(token_id, ownerBids);
+            const ownerOffers = await storage.offers.get(token_id);
+            if (ownerOffers) offersTokenIDMap.set(token_id, ownerOffers);
 
             console.log(
               "found for " +
@@ -294,7 +294,7 @@ export default function BidsPage() {
         })
       );
       setOwnerTokenIds(new Set(ownerTokenIds)); //force refresh
-      setBidsTokenIDMap(new Map(bidsTokenIDMap)); //force refresh
+      setOffersTokenIDMap(new Map(offersTokenIDMap)); //force refresh
     } else {
       console.log("context is empty, wait for parent and retry ...");
     }
@@ -328,7 +328,7 @@ export default function BidsPage() {
       enqueueSnackbar(
         "Wine collection (token_id=" +
           token_id +
-          ") bid for " +
+          ") offer for " +
           1 +
           " units at price of " +
           price +
@@ -378,12 +378,13 @@ export default function BidsPage() {
               />
 
               <CardContent>
-                {bidsTokenIDMap.get(token_id) ? (
+                {offersTokenIDMap.get(token_id) ? (
                   <div>
-                    {"Bid : " +
+                    {"Offer : " +
                       1 +
                       " at price " +
-                      bidsTokenIDMap.get(token_id)?.price.dividedBy(1000000)}
+                      offersTokenIDMap.get(token_id)?.price.dividedBy(1000000) +
+                      " XTZ/bottle"}
                   </div>
                 ) : (
                   ""
@@ -433,16 +434,16 @@ Explanations :
 ## Update the navigation
 
 Update routes on the `./src/Paperbase.tsx` file.
-Import the Bidspage at the beginning of the file.
+Import the Offerspage at the beginning of the file.
 
 ```typescript
-import BidsPage from "./BidsPage";
+import OffersPage from "./OffersPage";
 ```
 
 and at the end of the file, just add this line after `<Route index element={<Welcome />} />`
 
 ```typescript
-<Route path={PagesPaths.BIDS} element={<BidsPage />} />
+<Route path={PagesPaths.OFFERS} element={<OffersPage />} />
 ```
 
 ## Update the menu bar on the left
@@ -465,7 +466,7 @@ useEffect(() => {
           {
             id: "Bottle offers",
             icon: <SellIcon />,
-            path: "/" + PagesPaths.BIDS,
+            path: "/" + PagesPaths.OFFERS,
           },
         ],
       },
@@ -541,9 +542,9 @@ import { UserContext, UserContextType } from "./App";
 import { TransactionInvalidBeaconError } from "./TransactionInvalidBeaconError";
 import { address, nat } from "./type-aliases";
 
-type BidEntry = [nat, Bid];
+type OfferEntry = [nat, Offer];
 
-type Bid = {
+type Offer = {
   owner: address;
   price: nat;
 };
@@ -557,25 +558,28 @@ export default function WineCataloguePage() {
     refreshUserContextOnPageReload,
     storage,
   } = React.useContext(UserContext) as UserContextType;
-  const [selectedBidEntry, setSelectedBidEntry] =
-    React.useState<BidEntry | null>(null);
+  const [selectedOfferEntry, setSelectedOfferEntry] =
+    React.useState<OfferEntry | null>(null);
 
   const formik = useFormik({
     initialValues: {},
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      console.log("onSubmit: (values)", values, selectedBidEntry);
-      buy(selectedBidEntry!);
+      console.log("onSubmit: (values)", values, selectedOfferEntry);
+      buy(selectedOfferEntry!);
     },
   });
   const { enqueueSnackbar } = useSnackbar();
 
-  const buy = async (selectedBidEntry: BidEntry) => {
+  const buy = async (selectedOfferEntry: OfferEntry) => {
     try {
       const op = await nftContrat?.methods
-        .buy(BigNumber(selectedBidEntry[0]) as nat, selectedBidEntry[1].owner)
+        .buy(
+          BigNumber(selectedOfferEntry[0]) as nat,
+          selectedOfferEntry[1].owner
+        )
         .send({
-          amount: selectedBidEntry[1].price.toNumber(),
+          amount: selectedOfferEntry[1].price.toNumber(),
           mutez: true,
         });
 
@@ -585,7 +589,7 @@ export default function WineCataloguePage() {
         "Bought " +
           1 +
           " unit of Wine collection (token_id:" +
-          selectedBidEntry[0] +
+          selectedOfferEntry[0] +
           ")",
         {
           variant: "success",
@@ -619,9 +623,9 @@ export default function WineCataloguePage() {
       }}
     >
       <Paper sx={{ maxWidth: 936, margin: "auto", overflow: "hidden" }}>
-        {storage?.bids && storage?.bids.size != 0 ? (
-          Array.from(storage?.bids.entries()).map(([token_id, bid]) => (
-            <Card key={bid.owner + "-" + token_id.toString()}>
+        {storage?.offers && storage?.offers.size != 0 ? (
+          Array.from(storage?.offers.entries()).map(([token_id, offer]) => (
+            <Card key={offer.owner + "-" + token_id.toString()}>
               <CardHeader
                 avatar={
                   <Avatar sx={{ bgcolor: "purple" }} aria-label="recipe">
@@ -631,15 +635,15 @@ export default function WineCataloguePage() {
                 title={
                   nftContratTokenMetadataMap.get(token_id.toNumber())?.name
                 }
-                subheader={"seller : " + bid.owner}
+                subheader={"seller : " + offer.owner}
               />
 
               <CardContent>
                 <div>
-                  {"Bid : " +
+                  {"Offer : " +
                     1 +
                     " at price " +
-                    bid.price.dividedBy(1000000) +
+                    offer.price.dividedBy(1000000) +
                     " XTZ/bottle"}
                 </div>
               </CardContent>
@@ -647,7 +651,7 @@ export default function WineCataloguePage() {
               <CardActions disableSpacing>
                 <form
                   onSubmit={(values) => {
-                    setSelectedBidEntry([token_id, bid]);
+                    setSelectedOfferEntry([token_id, offer]);
                     formik.handleSubmit(values);
                   }}
                 >
@@ -701,7 +705,7 @@ useEffect(() => {
           {
             id: "Bottle offers",
             icon: <SellIcon />,
-            path: "/" + PagesPaths.BIDS,
+            path: "/" + PagesPaths.OFFERS,
           },
         ],
       },

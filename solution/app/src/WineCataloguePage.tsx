@@ -18,9 +18,9 @@ import { UserContext, UserContextType } from "./App";
 import { TransactionInvalidBeaconError } from "./TransactionInvalidBeaconError";
 import { address, nat } from "./type-aliases";
 
-type BidEntry = [nat, Bid];
+type OfferEntry = [nat, Offer];
 
-type Bid = {
+type Offer = {
   owner: address;
   price: nat;
 };
@@ -34,25 +34,28 @@ export default function WineCataloguePage() {
     refreshUserContextOnPageReload,
     storage,
   } = React.useContext(UserContext) as UserContextType;
-  const [selectedBidEntry, setSelectedBidEntry] =
-    React.useState<BidEntry | null>(null);
+  const [selectedOfferEntry, setSelectedOfferEntry] =
+    React.useState<OfferEntry | null>(null);
 
   const formik = useFormik({
     initialValues: {},
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      console.log("onSubmit: (values)", values, selectedBidEntry);
-      buy(selectedBidEntry!);
+      console.log("onSubmit: (values)", values, selectedOfferEntry);
+      buy(selectedOfferEntry!);
     },
   });
   const { enqueueSnackbar } = useSnackbar();
 
-  const buy = async (selectedBidEntry: BidEntry) => {
+  const buy = async (selectedOfferEntry: OfferEntry) => {
     try {
       const op = await nftContrat?.methods
-        .buy(BigNumber(selectedBidEntry[0]) as nat, selectedBidEntry[1].owner)
+        .buy(
+          BigNumber(selectedOfferEntry[0]) as nat,
+          selectedOfferEntry[1].owner
+        )
         .send({
-          amount: selectedBidEntry[1].price.toNumber(),
+          amount: selectedOfferEntry[1].price.toNumber(),
           mutez: true,
         });
 
@@ -62,7 +65,7 @@ export default function WineCataloguePage() {
         "Bought " +
           1 +
           " unit of Wine collection (token_id:" +
-          selectedBidEntry[0] +
+          selectedOfferEntry[0] +
           ")",
         {
           variant: "success",
@@ -96,9 +99,9 @@ export default function WineCataloguePage() {
       }}
     >
       <Paper sx={{ maxWidth: 936, margin: "auto", overflow: "hidden" }}>
-        {storage?.bids && storage?.bids.size != 0 ? (
-          Array.from(storage?.bids.entries()).map(([token_id, bid]) => (
-            <Card key={bid.owner + "-" + token_id.toString()}>
+        {storage?.offers && storage?.offers.size != 0 ? (
+          Array.from(storage?.offers.entries()).map(([token_id, offer]) => (
+            <Card key={offer.owner + "-" + token_id.toString()}>
               <CardHeader
                 avatar={
                   <Avatar sx={{ bgcolor: "purple" }} aria-label="recipe">
@@ -108,15 +111,15 @@ export default function WineCataloguePage() {
                 title={
                   nftContratTokenMetadataMap.get(token_id.toNumber())?.name
                 }
-                subheader={"seller : " + bid.owner}
+                subheader={"seller : " + offer.owner}
               />
 
               <CardContent>
                 <div>
-                  {"Bid : " +
+                  {"Offer : " +
                     1 +
                     " at price " +
-                    bid.price.dividedBy(1000000) +
+                    offer.price.dividedBy(1000000) +
                     " XTZ/bottle"}
                 </div>
               </CardContent>
@@ -124,7 +127,7 @@ export default function WineCataloguePage() {
               <CardActions disableSpacing>
                 <form
                   onSubmit={(values) => {
-                    setSelectedBidEntry([token_id, bid]);
+                    setSelectedOfferEntry([token_id, offer]);
                     formik.handleSubmit(values);
                   }}
                 >

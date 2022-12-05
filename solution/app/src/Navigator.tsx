@@ -17,7 +17,7 @@ import { UserContext, UserContextType } from "./App";
 export enum PagesPaths {
   WELCOME = "",
   CATALOG = "catalogue",
-  BIDS = "bids",
+  OFFERS = "offers",
   MINT = "mint",
 }
 
@@ -80,7 +80,7 @@ export default function Navigator(props: DrawerProps) {
             {
               id: "Bottle offers",
               icon: <SellIcon />,
-              path: "/" + PagesPaths.BIDS,
+              path: "/" + PagesPaths.OFFERS,
             },
           ],
         },

@@ -6,14 +6,14 @@
       ["0", "Enter a positive and not null amount"],
       ["1", "Operation not allowed, you need to be administrator"],
       ["2", "You cannot sell more than your current balance"],
-      ["3", "Cannot find the bid you entered for buying"],
-      ["4", "You entered a quantity to buy than is more than the bid offer quantity"],
-      ["5", "Not enough funds, you need to pay at least quantity * bid price to get the tokens"],
+      ["3", "Cannot find the offer you entered for buying"],
+      ["4", "You entered a quantity to buy than is more than the offer quantity"],
+      ["5", "Not enough funds, you need to pay at least quantity * offer price to get the tokens"],
       ["6", "Cannot find the contract relative to implicit address"],
     ]));
 */
 
-type bid = {
+type offer = {
   owner : address,
   price : nat
 };
@@ -21,7 +21,7 @@ type bid = {
 type storage =
   {
     administrators: set<address>,
-    bids: map<nat,bid>,  //user sell a bid
+    offers: map<nat,offer>,  //user sells an offer
     ledger: NFT.Ledger.t,
     metadata: NFT.Metadata.t,
     token_metadata: NFT.TokenMetadata.t,
@@ -91,28 +91,28 @@ const sell = (token_id : nat,price: nat, s: storage) : ret => {
   //need to allow the contract itself to be an operator on behalf of the seller
   const newOperators = NFT.Operators.add_operator(s.operators,Tezos.get_source(),Tezos.get_self_address(),token_id);
 
-  //DECISION CHOICE: if bid already exists, we just override it
-  return [list([]) as list<operation>,{...s,bids:Map.add(token_id,{owner : Tezos.get_source(), price : price},s.bids),operators:newOperators}];
+  //DECISION CHOICE: if offer already exists, we just override it
+  return [list([]) as list<operation>,{...s,offers:Map.add(token_id,{owner : Tezos.get_source(), price : price},s.offers),operators:newOperators}];
 };
 
 const buy = (token_id : nat, seller: address, s: storage) : ret => {
 
-  //search for the bid
-  return match( Map.find_opt(token_id,s.bids) , {
+  //search for the offer
+  return match( Map.find_opt(token_id,s.offers) , {
     None : () => failwith("3"),
-    Some : (bid : bid) => {
+    Some : (offer : offer) => {
 
       //check if amount have been paid enough
-      if(Tezos.get_amount() < bid.price  * (1 as mutez)) return failwith("5");
+      if(Tezos.get_amount() < offer.price  * (1 as mutez)) return failwith("5");
 
       // prepare transfer of XTZ to seller
-      const op = Tezos.transaction(unit,bid.price  * (1 as mutez),Tezos.get_contract_with_error(seller,"6"));
+      const op = Tezos.transaction(unit,offer.price  * (1 as mutez),Tezos.get_contract_with_error(seller,"6"));
 
       //transfer tokens from seller to buyer
       const ledger = NFT.Ledger.transfer_token_from_user_to_user(s.ledger,token_id,seller,Tezos.get_source());
 
-      //remove bid
-      return [list([op]) as list<operation>, {...s, bids : Map.update(token_id,None(),s.bids), ledger : ledger}];
+      //remove offer
+      return [list([op]) as list<operation>, {...s, offers : Map.update(token_id,None(),s.offers), ledger : ledger}];
     }
   });
 };

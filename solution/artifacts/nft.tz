@@ -11,7 +11,7 @@
                (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
                    (pair %remove_operator (address %owner) (address %operator) (nat %token_id)))))) ;
   storage
-    (pair (pair (pair (address %administrator) (map %bids nat (pair (address %owner) (nat %price))))
+    (pair (pair (pair (address %administrator) (map %offers nat (pair (address %owner) (nat %price))))
                 (big_map %ledger nat address)
                 (big_map %metadata string bytes))
           (pair (big_map %operators (pair address address) (set nat)) (set %token_ids nat))
