@@ -183,6 +183,7 @@ Generate Typescript classes and go to the frontend to run the server
 ```bash
 taq generate types ./app/src
 cd ./app
+yarn install
 yarn run start
 ```
 
