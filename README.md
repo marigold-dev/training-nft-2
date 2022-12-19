@@ -49,7 +49,7 @@ type storage =
 
 Add 2 variants `Buy and Sell` to parameter
 
-````jsligo
+```jsligo
 type parameter =
   | ["Mint", nat,bytes,bytes,bytes,bytes] //token_id, name , description  ,symbol , ipfsUrl
   | ["Buy", nat, address]  //buy token_id at a seller offer price
@@ -59,7 +59,6 @@ type parameter =
   | ["Balance_of", NFT.balance_of]
   | ["Update_operators", NFT.update_operators];
 ```
-
 
 Add 2 entrypoints `Buy and Sell` on main
 
@@ -74,7 +73,7 @@ const main = ([p, s]: [parameter,storage]): ret =>
      Balance_of: (p: NFT.balance_of) => [list([]),s],
      Update_operators: (p: NFT.update_operator) => [list([]),s],
      });
-````
+```
 
 Explanations :
 
