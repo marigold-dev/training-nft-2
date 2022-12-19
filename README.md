@@ -214,7 +214,7 @@ taq deploy nft.tz -e "testing"
 ┌──────────┬──────────────────────────────────────┬───────┬──────────────────┬────────────────────────────────┐
 │ Contract │ Address                              │ Alias │ Balance In Mutez │ Destination                    │
 ├──────────┼──────────────────────────────────────┼───────┼──────────────────┼────────────────────────────────┤
-│ nft.tz   │ KT1CzNaWiTL48XodbaNXCfQxp7g5vBXbmScm │ nft   │ 0                │ https://ghostnet.ecadinfra.com │
+│ nft.tz   │ KT1PLvVGaM4YE1qLSdLZUZ1EhozqzYUQ1xed │ nft   │ 0                │ https://ghostnet.ecadinfra.com │
 └──────────┴──────────────────────────────────────┴───────┴──────────────────┴────────────────────────────────┘
 ```
 

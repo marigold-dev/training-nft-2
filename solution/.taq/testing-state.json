@@ -28,6 +28,20 @@
                     "destination": "https://ghostnet.ecadinfra.com"
                 }
             ]
+        },
+        "@taqueria/plugin-taquito.deploy.1671463846059": {
+            "task": "deploy",
+            "plugin": "@taqueria/plugin-taquito",
+            "time": 1671463846059,
+            "output": [
+                {
+                    "contract": "nft.tz",
+                    "address": "KT1PLvVGaM4YE1qLSdLZUZ1EhozqzYUQ1xed",
+                    "alias": "nft",
+                    "balanceInMutez": "0",
+                    "destination": "https://ghostnet.ecadinfra.com"
+                }
+            ]
         }
     }
 }
