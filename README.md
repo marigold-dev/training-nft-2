@@ -23,34 +23,58 @@ cd ..
 
 Add these code sections on your `nft.jsligo` smart contract
 
-```jsligo
+Add offer type
 
+```jsligo
 type offer = {
   owner : address,
   price : nat
 };
+```
 
+Add `offers` field to storage
+
+```jsligo
 type storage =
   {
-...
+    administrators: set<address>,
     offers: map<nat,offer>,  //user sells an offer
-...
+    ledger: NFT.Ledger.t,
+    metadata: NFT.Metadata.t,
+    token_metadata: NFT.TokenMetadata.t,
+    operators: NFT.Operators.t,
+    token_ids : set<NFT.Storage.token_id>
   };
+```
 
-...
+Add 2 variants `Buy and Sell` to parameter
 
+````jsligo
 type parameter =
-...
+  | ["Mint", nat,bytes,bytes,bytes,bytes] //token_id, name , description  ,symbol , ipfsUrl
   | ["Buy", nat, address]  //buy token_id at a seller offer price
   | ["Sell", nat, nat]  //sell token_id at a price
-...
+  | ["AddAdministrator" , address]
+  | ["Transfer", NFT.transfer]
+  | ["Balance_of", NFT.balance_of]
+  | ["Update_operators", NFT.update_operators];
+```
 
+
+Add 2 entrypoints `Buy and Sell` on main
+
+```jsligo
 const main = ([p, s]: [parameter,storage]): ret =>
-...
+    match(p, {
+     Mint: (p: [nat,bytes,bytes,bytes,bytes]) => mint(p[0],p[1],p[2],p[3],p[4],s),
      Buy: (p : [nat,address]) => [list([]),s],
      Sell: (p : [nat,nat]) => [list([]),s],
-...
-```
+     AddAdministrator : (p : address) => {if(Set.mem(Tezos.get_sender(), s.administrators)){ return [list([]),{...s,administrators:Set.add(p, s.administrators)}]} else {return failwith("1");}} ,
+     Transfer: (p: NFT.transfer) => [list([]),s],
+     Balance_of: (p: NFT.balance_of) => [list([]),s],
+     Update_operators: (p: NFT.update_operator) => [list([]),s],
+     });
+````
 
 Explanations :
 
@@ -59,18 +83,27 @@ Explanations :
 - `parameter` has more entrypoints for selling/buying `(Sell,Buy)`
 - `main` function exposes the new entrypoints
 
-Update also the initial storage on file `nft.storages.jsligo`
+Update also the initial storage on file `nft.storages.jsligo` to initialize `offers`
 
 ```jsligo
-...
-    offers: Map.empty as map<nat,offer>,
-...
+#include "nft.jsligo"
+const default_storage =
+  {administrators: Set.literal(list(["tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"
+      as address]))
+    as set<address>,
+   offers: Map.empty as map<nat,offer>,
+   ledger: Big_map.empty as NFT.Ledger.t,
+   metadata: Big_map.empty as NFT.Metadata.t,
+   token_metadata: Big_map.empty as NFT.TokenMetadata.t,
+   operators: Big_map.empty as NFT.Operators.t,
+   token_ids: Set.empty as set<NFT.Storage.token_id>
+   };
 ```
 
 Compile the contract
 
 ```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:0.56.0 taq compile nft.jsligo
+TAQ_LIGO_IMAGE=ligolang/ligo:0.57.0 taq compile nft.jsligo
 ```
 
 ## :credit_card: Sell at an offer price
@@ -78,8 +111,6 @@ TAQ_LIGO_IMAGE=ligolang/ligo:0.56.0 taq compile nft.jsligo
 Let's add the `sell` function. Edit the code sections as below
 
 ```jsligo
-...
-
 const sell = (token_id : nat,price: nat, s: storage) : ret => {
 
   //check balance of seller
@@ -92,14 +123,21 @@ const sell = (token_id : nat,price: nat, s: storage) : ret => {
   //DECISION CHOICE: if offer already exists, we just override it
   return [list([]) as list<operation>,{...s,offers:Map.add(token_id,{owner : Tezos.get_source(), price : price},s.offers),operators:newOperators}];
 };
+```
 
-...
+Call `sell` function on main
 
+```jsligo
 const main = ([p, s]: [parameter,storage]): ret =>
-...
+    match(p, {
+     Mint: (p: [nat,bytes,bytes,bytes,bytes]) => mint(p[0],p[1],p[2],p[3],p[4],s),
+     Buy: (p : [nat,address]) => [list([]),s],
      Sell: (p : [nat,nat]) => sell(p[0],p[1], s),
-...
-
+     AddAdministrator : (p : address) => {if(Set.mem(Tezos.get_sender(), s.administrators)){ return [list([]),{...s,administrators:Set.add(p, s.administrators)}]} else {return failwith("1");}} ,
+     Transfer: (p: NFT.transfer) => [list([]),s],
+     Balance_of: (p: NFT.balance_of) => [list([]),s],
+     Update_operators: (p: NFT.update_operator) => [list([]),s],
+     });
 ```
 
 Explanations :
@@ -116,8 +154,6 @@ Now that we have offers on the market, we are able to buy bottles
 Edit the smart contract to add this feature, as below
 
 ```jsligo
-...
-
 const buy = (token_id : nat, seller: address, s: storage) : ret => {
 
   //search for the offer
@@ -139,13 +175,21 @@ const buy = (token_id : nat, seller: address, s: storage) : ret => {
     }
   });
 };
+```
 
-...
+Call `buy` function on main
 
+```jsligo
 const main = ([p, s]: [parameter,storage]): ret =>
-...
+    match(p, {
+     Mint: (p: [nat,bytes,bytes,bytes,bytes]) => mint(p[0],p[1],p[2],p[3],p[4],s),
      Buy: (p : [nat,address]) => buy(p[0],p[1],s),
-...
+     Sell: (p : [nat,nat]) => sell(p[0],p[1], s),
+     AddAdministrator : (p : address) => {if(Set.mem(Tezos.get_sender(), s.administrators)){ return [list([]),{...s,administrators:Set.add(p, s.administrators)}]} else {return failwith("1");}} ,
+     Transfer: (p: NFT.transfer) => [list([]),s],
+     Balance_of: (p: NFT.balance_of) => [list([]),s],
+     Update_operators: (p: NFT.update_operator) => [list([]),s],
+     });
 ```
 
 Explanations :
@@ -163,6 +207,7 @@ We have finished the smart contract implementation for this second training, let
 Deploy to ghostnet
 
 ```bash
+TAQ_LIGO_IMAGE=ligolang/ligo:0.57.0 taq compile nft.jsligo
 taq deploy nft.tz -e "testing"
 ```
 
@@ -170,7 +215,7 @@ taq deploy nft.tz -e "testing"
 ┌──────────┬──────────────────────────────────────┬───────┬──────────────────┬────────────────────────────────┐
 │ Contract │ Address                              │ Alias │ Balance In Mutez │ Destination                    │
 ├──────────┼──────────────────────────────────────┼───────┼──────────────────┼────────────────────────────────┤
-│ nft.tz   │ KT1F9EV54K7hRgwJKEyq5bxJokr8bTkYyC16 │ nft   │ 0                │ https://ghostnet.ecadinfra.com │
+│ nft.tz   │ KT1CzNaWiTL48XodbaNXCfQxp7g5vBXbmScm │ nft   │ 0                │ https://ghostnet.ecadinfra.com │
 └──────────┴──────────────────────────────────────┴───────┴──────────────────┴────────────────────────────────┘
 ```
 
@@ -187,37 +232,44 @@ yarn install
 yarn run start
 ```
 
-## Create the Sale page
+## Sale page
 
-Create the Sale Page
+Edit Sale Page on `./src/OffersPage.tsx`
 
-```bash
-touch ./src/OffersPage.tsx
-```
-
-Add this code inside the created file :
+Add this code inside the file :
 
 ```typescript
+import { InfoOutlined } from "@mui/icons-material";
 import SellIcon from "@mui/icons-material/Sell";
+
 import {
-  Avatar,
+  Box,
   Button,
   Card,
   CardActions,
   CardContent,
   CardHeader,
+  CardMedia,
+  ImageList,
+  InputAdornment,
+  Pagination,
   TextField,
+  Tooltip,
+  Typography,
+  useMediaQuery,
 } from "@mui/material";
-import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import BigNumber from "bignumber.js";
 import { useFormik } from "formik";
 import { useSnackbar } from "notistack";
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import * as yup from "yup";
 import { UserContext, UserContextType } from "./App";
+import ConnectButton from "./ConnectWallet";
 import { TransactionInvalidBeaconError } from "./TransactionInvalidBeaconError";
 import { address, nat } from "./type-aliases";
+
+const itemPerPage: number = 6;
 
 const validationSchema = yup.object({
   price: yup
@@ -226,12 +278,6 @@ const validationSchema = yup.object({
     .positive("ERROR: The number must be greater than 0!"),
 });
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
 type Offer = {
   owner: address;
   price: nat;
@@ -239,6 +285,7 @@ type Offer = {
 
 export default function OffersPage() {
   const [selectedTokenId, setSelectedTokenId] = React.useState<number>(0);
+  const [currentPageIndex, setCurrentPageIndex] = useState<number>(1);
 
   let [offersTokenIDMap, setOffersTokenIDMap] = React.useState<Map<nat, Offer>>(
     new Map()
@@ -251,6 +298,10 @@ export default function OffersPage() {
     userAddress,
     storage,
     refreshUserContextOnPageReload,
+    Tezos,
+    setUserAddress,
+    setUserBalance,
+    wallet,
   } = React.useContext(UserContext) as UserContextType;
 
   const { enqueueSnackbar } = useSnackbar();
@@ -349,79 +400,155 @@ export default function OffersPage() {
     }
   };
 
+  const isDesktop = useMediaQuery("(min-width:1100px)");
+  const isTablet = useMediaQuery("(min-width:600px)");
+
   return (
-    <Box
-      component="main"
-      sx={{
-        flex: 1,
-        py: 6,
-        px: 4,
-        bgcolor: "#eaeff1",
-        backgroundImage:
-          "url(https://en.vinex.market/skin/default/images/banners/home/new/banner-1180.jpg)",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-      }}
-    >
-      <Paper sx={{ maxWidth: 936, margin: "auto", overflow: "hidden" }}>
-        {ownerTokenIds && ownerTokenIds.size != 0 ? (
-          Array.from(ownerTokenIds).map((token_id) => (
-            <Card key={userAddress + "-" + token_id.toString()}>
-              <CardHeader
-                avatar={
-                  <Avatar sx={{ bgcolor: "purple" }} aria-label="recipe">
-                    {token_id.toString()}
-                  </Avatar>
-                }
-                title={
-                  nftContratTokenMetadataMap.get(token_id.toNumber())?.name
-                }
-              />
+    <Paper>
+      <Typography style={{ paddingBottom: "10px" }} variant="h5">
+        Sell my bottles
+      </Typography>
+      {ownerTokenIds && ownerTokenIds.size != 0 ? (
+        <Fragment>
+          <Pagination
+            page={currentPageIndex}
+            onChange={(_, value) => setCurrentPageIndex(value)}
+            count={Math.ceil(
+              Array.from(ownerTokenIds.entries()).length / itemPerPage
+            )}
+            showFirstButton
+            showLastButton
+          />
 
-              <CardContent>
-                {offersTokenIDMap.get(token_id) ? (
-                  <div>
-                    {"Offer : " +
-                      1 +
-                      " at price " +
-                      offersTokenIDMap.get(token_id)?.price.dividedBy(1000000) +
-                      " XTZ/bottle"}
-                  </div>
-                ) : (
-                  ""
-                )}
-              </CardContent>
-
-              <CardActions disableSpacing>
-                <form
-                  onSubmit={(values) => {
-                    setSelectedTokenId(token_id.toNumber());
-                    formik.handleSubmit(values);
-                  }}
-                >
-                  <TextField
-                    name="price"
-                    label="price/bottle (XTZ)"
-                    placeholder="Enter a price"
-                    variant="standard"
-                    type="number"
-                    value={formik.values.price}
-                    onChange={formik.handleChange}
-                    error={formik.touched.price && Boolean(formik.errors.price)}
-                    helperText={formik.touched.price && formik.errors.price}
+          <ImageList
+            cols={isDesktop ? itemPerPage / 2 : isTablet ? itemPerPage / 3 : 1}
+          >
+            {Array.from(ownerTokenIds.entries())
+              .filter((_, index) =>
+                index >= currentPageIndex * itemPerPage - itemPerPage &&
+                index < currentPageIndex * itemPerPage
+                  ? true
+                  : false
+              )
+              .map(([token_id]) => (
+                <Card key={token_id + "-" + token_id.toString()}>
+                  <CardHeader
+                    avatar={
+                      <Tooltip
+                        title={
+                          <Box>
+                            <Typography>
+                              {" "}
+                              {"ID : " + token_id.toString()}{" "}
+                            </Typography>
+                            <Typography>
+                              {"Description : " +
+                                nftContratTokenMetadataMap.get(
+                                  token_id.toNumber()
+                                )?.description}
+                            </Typography>
+                          </Box>
+                        }
+                      >
+                        <InfoOutlined />
+                      </Tooltip>
+                    }
+                    title={
+                      nftContratTokenMetadataMap.get(token_id.toNumber())?.name
+                    }
                   />
-                  <Button type="submit" aria-label="add to favorites">
-                    <SellIcon /> SELL
-                  </Button>
-                </form>
-              </CardActions>
-            </Card>
-          ))
-        ) : (
-          <Fragment />
-        )}
-      </Paper>
-    </Box>
+                  <CardMedia
+                    sx={{ width: "auto", marginLeft: "33%" }}
+                    component="img"
+                    height="100px"
+                    image={nftContratTokenMetadataMap
+                      .get(token_id.toNumber())
+                      ?.thumbnailUri?.replace(
+                        "ipfs://",
+                        "https://gateway.pinata.cloud/ipfs/"
+                      )}
+                  />
+
+                  <CardContent>
+                    <Box>
+                      <Typography variant="body2">
+                        {offersTokenIDMap.get(token_id)
+                          ? "Traded : " +
+                            1 +
+                            " (price : " +
+                            offersTokenIDMap
+                              .get(token_id)
+                              ?.price.dividedBy(1000000) +
+                            " Tz)"
+                          : ""}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+
+                  <CardActions>
+                    {!userAddress ? (
+                      <Box marginLeft="5vw">
+                        <ConnectButton
+                          Tezos={Tezos}
+                          nftContratTokenMetadataMap={
+                            nftContratTokenMetadataMap
+                          }
+                          setUserAddress={setUserAddress}
+                          setUserBalance={setUserBalance}
+                          wallet={wallet}
+                        />
+                      </Box>
+                    ) : (
+                      <form
+                        style={{ width: "100%" }}
+                        onSubmit={(values) => {
+                          setSelectedTokenId(token_id.toNumber());
+                          formik.handleSubmit(values);
+                        }}
+                      >
+                        <span>
+                          <TextField
+                            type="number"
+                            name="price"
+                            label="price"
+                            placeholder="Enter a price"
+                            variant="filled"
+                            value={formik.values.price}
+                            onChange={formik.handleChange}
+                            error={
+                              formik.touched.price &&
+                              Boolean(formik.errors.price)
+                            }
+                            helperText={
+                              formik.touched.price && formik.errors.price
+                            }
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  <Button
+                                    type="submit"
+                                    aria-label="add to favorites"
+                                  >
+                                    <SellIcon /> Sell
+                                  </Button>
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        </span>
+                      </form>
+                    )}
+                  </CardActions>
+                </Card>
+              ))}{" "}
+          </ImageList>
+        </Fragment>
+      ) : (
+        <Typography sx={{ py: "2em" }} variant="h4">
+          Sorry, you don't own any bottles, buy or mint some first
+        </Typography>
+      )}
+    </Paper>
   );
 }
 ```
@@ -432,60 +559,7 @@ Explanations :
 - for each nft, we have a form to make an offer at a price
 - if you do an offer, it calls the `sell` function and the smart contract entrypoint `nftContrat?.methods.sell(BigNumber(token_id) as nat,BigNumber(price * 1000000) as nat).send()`. We multiply the XTZ price by 10^6 because the smartcontract manipulates mutez.
 
-## Update the navigation
-
-Update routes on the `./src/Paperbase.tsx` file.
-Import the Offerspage at the beginning of the file.
-
-```typescript
-import OffersPage from "./OffersPage";
-```
-
-and at the end of the file, just add this line after `<Route index element={<Welcome />} />`
-
-```typescript
-<Route path={PagesPaths.OFFERS} element={<OffersPage />} />
-```
-
-## Update the menu bar on the left
-
-Edit `Navigator.tsx` file to add an effect if the nft collection is not empty, we display a new menu entry
-
-```typescript
-...
-import React, { useEffect, useState } from "react";
-import SellIcon from "@mui/icons-material/Sell";
-...
-
-useEffect(() => {
-
-  if (nftContratTokenMetadataMap && nftContratTokenMetadataMap.size > 0)
-    setCategories([
-      {
-        id: "Trading",
-        children: [
-          {
-            id: "Bottle offers",
-            icon: <SellIcon />,
-            path: "/" + PagesPaths.OFFERS,
-          },
-        ],
-      },
-      {
-        id: "Administration",
-        children: [
-          {
-            id: "Mint wine collection",
-            icon: <SettingsIcon />,
-            path: "/" + PagesPaths.MINT,
-          },
-        ],
-      },
-    ]);
-}, [nftContratTokenMetadataMap, userAddress]);
-```
-
-## Let's play
+## Let's play : Sell
 
 1. Connect with your wallet an choose `alice` account (or one of the administrators you set on the smart contract earlier). You are redirected to the Administration /mint page as there is no nft minted yet
 2. Enter these values on the form for example :
@@ -497,14 +571,16 @@ useEffect(() => {
 3. Click on `Upload an image` an select a bottle picture on your computer
 4. Click on Mint button
 
-Your picture will be psuhed to IPFS and will display, then you are asked to sign the mint operation
+Your picture will be pushed to IPFS and will display, then you are asked to sign the mint operation
 
 - Confirm operation
 - Wait less than 1 minutes until you get the confirmation notification, the page will refresh automatically
 
-Now you can see the `Trading` menu and the `Bottle offers` sub menu
+Now, go to the `Trading` menu and the `Sell bottle` sub menu
 
 Click on the sub-menu entry
+
+![sell.png](./doc/sell.png)
 
 You are owner of this bottle so you can make an offer on it
 
@@ -512,36 +588,42 @@ You are owner of this bottle so you can make an offer on it
 - Click on `SELL` button
 - Wait a bit for the confirmation, then it refreshes and you have an offer attached to your NFT
 
-## Create the Wine Catalogue page
+## Wine Catalogue page
 
-Create the Wine Catalogue page
+Edit the Wine Catalogue page on `./src/WineCataloguePage.tsx`
 
-```bash
-touch ./src/WineCataloguePage.tsx
-```
-
-Add this code inside the created file :
+Add this code inside the file :
 
 ```typescript
+import { InfoOutlined } from "@mui/icons-material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import {
-  Avatar,
+  Box,
   Button,
   Card,
   CardActions,
   CardContent,
   CardHeader,
+  CardMedia,
+  ImageList,
+  Pagination,
+  Tooltip,
+  useMediaQuery,
 } from "@mui/material";
-import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+
 import BigNumber from "bignumber.js";
 import { useFormik } from "formik";
 import { useSnackbar } from "notistack";
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 import * as yup from "yup";
 import { UserContext, UserContextType } from "./App";
+import ConnectButton from "./ConnectWallet";
 import { TransactionInvalidBeaconError } from "./TransactionInvalidBeaconError";
 import { address, nat } from "./type-aliases";
+
+const itemPerPage: number = 6;
 
 type OfferEntry = [nat, Offer];
 
@@ -554,8 +636,13 @@ const validationSchema = yup.object({});
 
 export default function WineCataloguePage() {
   const {
-    nftContrat,
+    Tezos,
     nftContratTokenMetadataMap,
+    setUserAddress,
+    setUserBalance,
+    wallet,
+    userAddress,
+    nftContrat,
     refreshUserContextOnPageReload,
     storage,
   } = React.useContext(UserContext) as UserContextType;
@@ -563,7 +650,9 @@ export default function WineCataloguePage() {
     React.useState<OfferEntry | null>(null);
 
   const formik = useFormik({
-    initialValues: {},
+    initialValues: {
+      quantity: 1,
+    },
     validationSchema: validationSchema,
     onSubmit: (values) => {
       console.log("onSubmit: (values)", values, selectedOfferEntry);
@@ -571,6 +660,7 @@ export default function WineCataloguePage() {
     },
   });
   const { enqueueSnackbar } = useSnackbar();
+  const [currentPageIndex, setCurrentPageIndex] = useState<number>(1);
 
   const buy = async (selectedOfferEntry: OfferEntry) => {
     try {
@@ -608,127 +698,133 @@ export default function WineCataloguePage() {
       });
     }
   };
-
+  const isDesktop = useMediaQuery("(min-width:1100px)");
+  const isTablet = useMediaQuery("(min-width:600px)");
   return (
-    <Box
-      component="main"
-      sx={{
-        flex: 1,
-        py: 6,
-        px: 4,
-        bgcolor: "#eaeff1",
-        backgroundImage:
-          "url(https://en.vinex.market/skin/default/images/banners/home/new/banner-1180.jpg)",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-      }}
-    >
-      <Paper sx={{ maxWidth: 936, margin: "auto", overflow: "hidden" }}>
-        {storage?.offers && storage?.offers.size != 0 ? (
-          Array.from(storage?.offers.entries()).map(([token_id, offer]) => (
-            <Card key={offer.owner + "-" + token_id.toString()}>
-              <CardHeader
-                avatar={
-                  <Avatar sx={{ bgcolor: "purple" }} aria-label="recipe">
-                    {token_id.toString()}
-                  </Avatar>
-                }
-                title={
-                  nftContratTokenMetadataMap.get(token_id.toNumber())?.name
-                }
-                subheader={"seller : " + offer.owner}
-              />
+    <Paper>
+      <Typography style={{ paddingBottom: "10px" }} variant="h5">
+        Wine catalogue
+      </Typography>
 
-              <CardContent>
-                <div>
-                  {"Offer : " +
-                    1 +
-                    " at price " +
-                    offer.price.dividedBy(1000000) +
-                    " XTZ/bottle"}
-                </div>
-              </CardContent>
+      {storage?.offers && storage?.offers.size != 0 ? (
+        <Fragment>
+          <Pagination
+            page={currentPageIndex}
+            onChange={(_, value) => setCurrentPageIndex(value)}
+            count={Math.ceil(
+              Array.from(storage?.offers.entries()).length / itemPerPage
+            )}
+            showFirstButton
+            showLastButton
+          />
+          <ImageList
+            cols={isDesktop ? itemPerPage / 2 : isTablet ? itemPerPage / 3 : 1}
+          >
+            {Array.from(storage?.offers.entries())
 
-              <CardActions disableSpacing>
-                <form
-                  onSubmit={(values) => {
-                    setSelectedOfferEntry([token_id, offer]);
-                    formik.handleSubmit(values);
-                  }}
-                >
-                  <Button type="submit" aria-label="add to favorites">
-                    <ShoppingCartIcon /> BUY
-                  </Button>
-                </form>
-              </CardActions>
-            </Card>
-          ))
-        ) : (
-          <Fragment />
-        )}
-      </Paper>
-    </Box>
+              .filter((_, index) =>
+                index >= currentPageIndex * itemPerPage - itemPerPage &&
+                index < currentPageIndex * itemPerPage
+                  ? true
+                  : false
+              )
+              .map(([token_id, offer]) => (
+                <Card key={offer.owner + "-" + token_id.toString()}>
+                  <CardHeader
+                    avatar={
+                      <Tooltip
+                        title={
+                          <Box>
+                            <Typography>
+                              {" "}
+                              {"ID : " + token_id.toString()}{" "}
+                            </Typography>
+                            <Typography>
+                              {"Description : " +
+                                nftContratTokenMetadataMap.get(
+                                  token_id.toNumber()
+                                )?.description}
+                            </Typography>
+                            <Typography>
+                              {"Seller : " + offer.owner}{" "}
+                            </Typography>
+                          </Box>
+                        }
+                      >
+                        <InfoOutlined />
+                      </Tooltip>
+                    }
+                    title={
+                      nftContratTokenMetadataMap.get(token_id.toNumber())?.name
+                    }
+                  />
+                  <CardMedia
+                    sx={{ width: "auto", marginLeft: "33%" }}
+                    component="img"
+                    height="100px"
+                    image={nftContratTokenMetadataMap
+                      .get(token_id.toNumber())
+                      ?.thumbnailUri?.replace(
+                        "ipfs://",
+                        "https://gateway.pinata.cloud/ipfs/"
+                      )}
+                  />
+
+                  <CardContent>
+                    <Box>
+                      <Typography variant="body2">
+                        {" "}
+                        {"Price : " + offer.price.dividedBy(1000000) + " XTZ"}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+
+                  <CardActions>
+                    {!userAddress ? (
+                      <Box marginLeft="5vw">
+                        <ConnectButton
+                          Tezos={Tezos}
+                          nftContratTokenMetadataMap={
+                            nftContratTokenMetadataMap
+                          }
+                          setUserAddress={setUserAddress}
+                          setUserBalance={setUserBalance}
+                          wallet={wallet}
+                        />
+                      </Box>
+                    ) : (
+                      <form
+                        style={{ width: "100%" }}
+                        onSubmit={(values) => {
+                          setSelectedOfferEntry([token_id, offer]);
+                          formik.handleSubmit(values);
+                        }}
+                      >
+                        <Button type="submit" aria-label="add to favorites">
+                          <ShoppingCartIcon /> BUY
+                        </Button>
+                      </form>
+                    )}
+                  </CardActions>
+                </Card>
+              ))}
+          </ImageList>
+        </Fragment>
+      ) : (
+        <Fragment />
+      )}
+    </Paper>
   );
 }
 ```
 
-## Update the navigation
-
-Update routes on the `./src/Paperbase.tsx` file.
-Import the WineCataloguePage at the beginning of the file.
-
-```typescript
-import WineCataloguePage from "./WineCataloguePage";
-```
-
-and at the end of the file, just add this line after `<Route index element={<Welcome />} />`
-
-```typescript
-<Route path={PagesPaths.CATALOG} element={<WineCataloguePage />} />
-```
-
-## Update the menu bar on the left
-
-Edit `Navigator.tsx` file to replace the previous effect, we add another menu entry
-
-```typescript
-useEffect(() => {
-  if (nftContratTokenMetadataMap && nftContratTokenMetadataMap.size > 0)
-    setCategories([
-      {
-        id: "Trading",
-        children: [
-          {
-            id: "Wine catalogue",
-            icon: <WineBarIcon />,
-            path: "/" + PagesPaths.CATALOG,
-          },
-          {
-            id: "Bottle offers",
-            icon: <SellIcon />,
-            path: "/" + PagesPaths.OFFERS,
-          },
-        ],
-      },
-      {
-        id: "Administration",
-        children: [
-          {
-            id: "Mint wine collection",
-            icon: <SettingsIcon />,
-            path: "/" + PagesPaths.MINT,
-          },
-        ],
-      },
-    ]);
-}, [nftContratTokenMetadataMap, userAddress]);
-```
-
-## Let's play
+## Let's play : Buy
 
 Now you can see on `Trading` menu the `Wine catalogue` sub menu
 
 Click on the sub-menu entry
+
+![buy.png](./doc/buy.png)
 
 As you are connected with the default administrator you can see your own unique offer on the market
 
