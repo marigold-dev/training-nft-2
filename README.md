@@ -25,7 +25,7 @@ Add these code sections on your `nft.jsligo` smart contract
 
 Add offer type
 
-```jsligo
+```ligolang
 type offer = {
   owner : address,
   price : nat
@@ -34,7 +34,7 @@ type offer = {
 
 Add `offers` field to storage
 
-```jsligo
+```ligolang
 type storage =
   {
     administrators: set<address>,
@@ -49,7 +49,7 @@ type storage =
 
 Add 2 variants `Buy and Sell` to parameter
 
-```jsligo
+```ligolang
 type parameter =
   | ["Mint", nat,bytes,bytes,bytes,bytes] //token_id, name , description  ,symbol , ipfsUrl
   | ["Buy", nat, address]  //buy token_id at a seller offer price
@@ -62,7 +62,7 @@ type parameter =
 
 Add 2 entrypoints `Buy and Sell` on main
 
-```jsligo
+```ligolang
 const main = ([p, s]: [parameter,storage]): ret =>
     match(p, {
      Mint: (p: [nat,bytes,bytes,bytes,bytes]) => mint(p[0],p[1],p[2],p[3],p[4],s),
@@ -84,7 +84,7 @@ Explanations :
 
 Update also the initial storage on file `nft.storages.jsligo` to initialize `offers`
 
-```jsligo
+```ligolang
 #include "nft.jsligo"
 const default_storage =
   {administrators: Set.literal(list(["tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"
@@ -109,7 +109,7 @@ TAQ_LIGO_IMAGE=ligolang/ligo:0.57.0 taq compile nft.jsligo
 
 Let's add the `sell` function. Edit the code sections as below
 
-```jsligo
+```ligolang
 const sell = (token_id : nat,price: nat, s: storage) : ret => {
 
   //check balance of seller
@@ -126,7 +126,7 @@ const sell = (token_id : nat,price: nat, s: storage) : ret => {
 
 Call `sell` function on main
 
-```jsligo
+```ligolang
 const main = ([p, s]: [parameter,storage]): ret =>
     match(p, {
      Mint: (p: [nat,bytes,bytes,bytes,bytes]) => mint(p[0],p[1],p[2],p[3],p[4],s),
@@ -152,7 +152,7 @@ Now that we have offers on the market, we are able to buy bottles
 
 Edit the smart contract to add this feature, as below
 
-```jsligo
+```ligolang
 const buy = (token_id : nat, seller: address, s: storage) : ret => {
 
   //search for the offer
@@ -178,7 +178,7 @@ const buy = (token_id : nat, seller: address, s: storage) : ret => {
 
 Call `buy` function on main
 
-```jsligo
+```ligolang
 const main = ([p, s]: [parameter,storage]): ret =>
     match(p, {
      Mint: (p: [nat,bytes,bytes,bytes,bytes]) => mint(p[0],p[1],p[2],p[3],p[4],s),
