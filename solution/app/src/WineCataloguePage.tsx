@@ -215,7 +215,8 @@ export default function WineCataloguePage() {
         </Fragment>
       ) : (
         <Typography sx={{ py: "2em" }} variant="h4">
-          Sorry, there is not NFT yet, you need to mint bottles first
+          Sorry, there is not NFT to buy yet, you need to mint or sell bottles
+          first
         </Typography>
       )}
     </Paper>
