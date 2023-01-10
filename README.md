@@ -1,3 +1,5 @@
+## :round_pushpin: [See Github version and full code here](https://github.com/marigold-dev/training-nft-2)
+
 # training-nft-2
 
 Training n°2 for NFT marketplace
