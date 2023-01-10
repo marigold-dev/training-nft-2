@@ -846,4 +846,6 @@ This concludes the nft training
 
 On next training, you will see another kind of NFT called `single asset`. Instead of creating x token types, you will be authorize to create only 1 token_id 0, on the other side, you can mint a quantity n of this token.
 
-[:arrow_right: NEXT](https://github.com/marigold-dev/training-nft-3)
+[:arrow_right: NEXT (HTML version)](https://marigold-dev.github.io/training-nft-3)
+
+[:arrow_right: NEXT (Github version)](https://github.com/marigold-dev/training-nft-3)
