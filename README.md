@@ -6,13 +6,13 @@ Training n°2 for NFT marketplace
 
 ![https://img.etimg.com/thumb/msid-71286763,width-1070,height-580,overlay-economictimes/photo.jpg](https://img.etimg.com/thumb/msid-71286763,width-1070,height-580,overlay-economictimes/photo.jpg)
 
-This time we are gone add the ability to buy and sell NFT at a price
+This time we will add the ability to buy and sell NFT!
 
 # :arrow_forward: Go forward
 
 Keep your code from previous training or get the solution [here](https://github.com/marigold-dev/training-nft-1/tree/main/solution)
 
-> If you clone/fork a repo, rebuild in local
+> If you clone/fork a repo, rebuild locally
 
 ```bash
 npm i
@@ -25,7 +25,7 @@ cd ..
 
 Add these code sections on your `nft.jsligo` smart contract
 
-Add offer type
+1. Add offer type
 
 ```ligolang
 type offer = {
@@ -34,7 +34,7 @@ type offer = {
 };
 ```
 
-Add `offers` field to storage
+2. Add `offers` field to storage
 
 ```ligolang
 type storage =
@@ -49,7 +49,7 @@ type storage =
   };
 ```
 
-Add 2 variants `Buy and Sell` to parameter
+3. Add 2 variants `Buy` and `Sell` to parameter
 
 ```ligolang
 type parameter =
@@ -62,7 +62,7 @@ type parameter =
   | ["Update_operators", NFT.update_operators];
 ```
 
-Add 2 entrypoints `Buy and Sell` on main
+4. Add 2 entrypoints `Buy` and `Sell` inside `main` function
 
 ```ligolang
 const main = ([p, s]: [parameter,storage]): ret =>
@@ -77,14 +77,14 @@ const main = ([p, s]: [parameter,storage]): ret =>
      });
 ```
 
-Explanations :
+Explanations:
 
-- an `offer` is a nft sale at a price owned by someone
-- `storage` has a new field to support `offers`, a map of offers for each nft sold by an owner
-- `parameter` has more entrypoints for selling/buying `(Sell,Buy)`
-- `main` function exposes the new entrypoints
+- an `offer` is an NFT _(owned by someone)_ with a price 
+- `storage` has a new field to store `offers`: a `map` of offers
+- `parameter` has two new entrypoints `buy` and `sell`
+- `main` function exposes these two new entrypoints
 
-Update also the initial storage on file `nft.storages.jsligo` to initialize `offers`
+Also update the initial storage on file `nft.storages.jsligo` to initialize `offers`
 
 ```ligolang
 #include "nft.jsligo"
@@ -101,7 +101,7 @@ const default_storage =
    };
 ```
 
-Compile the contract
+Finally, compile the contract
 
 ```bash
 TAQ_LIGO_IMAGE=ligolang/ligo:0.57.0 taq compile nft.jsligo
@@ -109,10 +109,10 @@ TAQ_LIGO_IMAGE=ligolang/ligo:0.57.0 taq compile nft.jsligo
 
 ## :credit_card: Sell at an offer price
 
-Let's add the `sell` function. Edit the code sections as below
+Define the `sell` function as below:
 
 ```ligolang
-const sell = (token_id : nat,price: nat, s: storage) : ret => {
+const sell = (token_id : nat,price : nat, s : storage) : ret => {
 
   //check balance of seller
   const sellerBalance = NFT.Storage.get_balance({ledger:s.ledger,metadata:s.metadata,operators:s.operators,token_metadata:s.token_metadata,token_ids : s.token_ids},Tezos.get_source(),token_id);
@@ -126,7 +126,7 @@ const sell = (token_id : nat,price: nat, s: storage) : ret => {
 };
 ```
 
-Call `sell` function on main
+Then call it in the `main` function to do the right business operations
 
 ```ligolang
 const main = ([p, s]: [parameter,storage]): ret =>
@@ -141,21 +141,21 @@ const main = ([p, s]: [parameter,storage]): ret =>
      });
 ```
 
-Explanations :
+Explanations:
 
-- first, we check the balance of the seller, he should have enough token to place an offer
-- the seller will set the nft marketplace smartcontract as operator. The reason is while the buyer will send his money to buy the NFT, the smartcontract will change the nft ownership (it is not interactive with the seller, the martketplace will do it on behalf of the seller based on the offer data)
-- we update the storage to publish the offer
-- adding the call to `sell` function on `main` function is straightforward
+- User must have enough tokens _(wine bottles)_ to place an offer
+- the seller will set the NFT marketplace smart contract as an operator. When the buyer send his money to buy the NFT, the smart contract will change the NFT ownership _(it is not interactive with the seller, the martketplace will do it on behalf of the seller based on the offer data)_
+- we update the `storage` to publish the offer
+- finally, do the correct business by calling `sell` function inside the `sell` case on `main`
 
-## :credit_card: Buy a bottle on the market
+## :credit_card: Buy a bottle on the marketplace
 
-Now that we have offers on the market, we are able to buy bottles
+Now that we have offers available on the marketplace, let's buy bottles!
 
-Edit the smart contract to add this feature, as below
+Edit the smart contract to add the `buy` feature
 
 ```ligolang
-const buy = (token_id : nat, seller: address, s: storage) : ret => {
+const buy = (token_id : nat, seller : address, s : storage) : ret => {
 
   //search for the offer
   return match( Map.find_opt(token_id,s.offers) , {
@@ -193,26 +193,21 @@ const main = ([p, s]: [parameter,storage]): ret =>
      });
 ```
 
-Explanations :
+Explanations:
 
-- first, we search for the offer based on the token_id, if it does not exist, we return an error
-- we check that the amount sent by the buyer is at least equal to the offer price
-- if it is ok, then we transfer the offer price to the seller and we transfer the nft to the buyer
-- finally we remove the offer as it has been executed
-- adding the call to `buy` function on `main` function is straightforward
+- search for the offer based on the `token_id` or return an error if it does not exist
+- check that the amount sent by the buyer is greater than the offer price. If it is ok, transfer the offer price to the seller and transfer the NFT to the buyer
+- remove the offer as it has been executed
+- finally, do the correct business by calling `sell` function inside the `sell` case on `main`
 
 ## Compile and deploy
 
-We have finished the smart contract implementation for this second training, let's prepare the deployment to ghostnet.
-
-Deploy to ghostnet
+We finished the smart contract implementation of this second training, let's deploy to ghostnet.
 
 ```bash
 TAQ_LIGO_IMAGE=ligolang/ligo:0.57.0 taq compile nft.jsligo
 taq deploy nft.tz -e "testing"
-```
 
-```logs
 ┌──────────┬──────────────────────────────────────┬───────┬──────────────────┬────────────────────────────────┐
 │ Contract │ Address                              │ Alias │ Balance In Mutez │ Destination                    │
 ├──────────┼──────────────────────────────────────┼───────┼──────────────────┼────────────────────────────────┤
@@ -220,7 +215,7 @@ taq deploy nft.tz -e "testing"
 └──────────┴──────────────────────────────────────┴───────┴──────────────────┴────────────────────────────────┘
 ```
 
-:tada: Hooray ! We have finished the backend :tada:
+**:tada: Hooray! We have implemented and deployed the smart contract (backend) :tada:**
 
 # :performing_arts: NFT Marketplace front
 
@@ -563,37 +558,40 @@ Explanations :
 ## Let's play : Sell
 
 1. Connect with your wallet an choose `alice` account (or one of the administrators you set on the smart contract earlier). You are redirected to the Administration /mint page as there is no nft minted yet
+
 2. Enter these values on the form for example :
 
-- name : Saint Emilion - Franc la Rose
-- symbol : SEMIL
-- description : Grand cru 2007
+- `name`: Saint Emilion - Franc la Rose
+- `symbol`: SEMIL
+- `description`: Grand cru 2007
 
 3. Click on `Upload an image` an select a bottle picture on your computer
+
 4. Click on Mint button
 
-Your picture will be pushed to IPFS and will display, then you are asked to sign the mint operation
+Your picture will be pushed to IPFS and be displayed, then your wallet ask you to sign the mint operation.
 
 - Confirm operation
-- Wait less than 1 minutes until you get the confirmation notification, the page will refresh automatically
 
-Now, go to the `Trading` menu and the `Sell bottle` sub menu
+- Wait less than 1 minute until you get the confirmation notification, the page will automatically be refreshed.
 
-Click on the sub-menu entry
+5. Now, go to the `Trading` menu and the `Sell bottles` sub menu.
+
+6. Click on the sub-menu entry
 
 ![sell.png](./doc/sell.png)
 
-You are owner of this bottle so you can make an offer on it
+You are owner of this bottle so you can create an offer to sell it.
 
 - Enter a price offer
 - Click on `SELL` button
-- Wait a bit for the confirmation, then it refreshes and you have an offer attached to your NFT
+- Wait a bit for the confirmation, then after auto refresh you have an offer for this NFT
 
-## Wine Catalogue page
+## Wine Catalog page
 
-Edit the Wine Catalogue page on `./src/WineCataloguePage.tsx`
+Edit the Wine Catalog page on `./src/WineCataloguePage.tsx`
 
-Add this code inside the file :
+Add the following code inside the file
 
 ```typescript
 import { InfoOutlined } from "@mui/icons-material";
@@ -822,27 +820,26 @@ export default function WineCataloguePage() {
 }
 ```
 
-## Let's play : Buy
+## Let's play: Buy some wine!
 
-Now you can see on `Trading` menu the `Wine catalogue` sub menu
-
-Click on the sub-menu entry
+Now you can see on `Trading` menu the `Wine catalog` sub menu, click on it.
 
 ![buy.png](./doc/buy.png)
 
 As you are connected with the default administrator you can see your own unique offer on the market
 
-- Disconnect from your user and connect with another account (who has enough XTZ to buy the bottle)
-- The logged buyer can see that alice is selling a bottle
-- Buy the bottle while clicking on `BUY` button
-- Wait for the confirmation, then the offer is removed from the market
+- Disconnect from your user and connect with another account who has enough XTZ to buy the bottle
+- The buyer can see that alice is selling a bottle
+- Buy the bottle by clicking on `BUY` button
+- Once confirmed, the offer is removed from the market
 - Click on `bottle offers` sub menu
 - You are now the owner of this bottle, you can resell it at your own price, etc ...
 
 # :palm_tree: Conclusion :sun_with_face:
 
-You were able to create an NFT collection marketplace from the ligo library, now you can buy or sell nft at your own price.
-This concludes the nft training
+You created an NFT collection marketplace from the ligo library, now you can buy and sell NFTs at your own price.
+
+This concludes the NFT training!
 
 On next training, you will see another kind of NFT called `single asset`. Instead of creating x token types, you will be authorize to create only 1 token_id 0, on the other side, you can mint a quantity n of this token.
 
