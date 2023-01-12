@@ -79,7 +79,7 @@ const main = ([p, s]: [parameter,storage]): ret =>
 
 Explanations:
 
-- an `offer` is an NFT _(owned by someone)_ with a price 
+- an `offer` is an NFT _(owned by someone)_ with a price
 - `storage` has a new field to store `offers`: a `map` of offers
 - `parameter` has two new entrypoints `buy` and `sell`
 - `main` function exposes these two new entrypoints
@@ -587,9 +587,9 @@ You are owner of this bottle so you can create an offer to sell it.
 - Click on `SELL` button
 - Wait a bit for the confirmation, then after auto refresh you have an offer for this NFT
 
-## Wine Catalog page
+## Wine Catalogue page
 
-Edit the Wine Catalog page on `./src/WineCataloguePage.tsx`
+Edit the Wine Catalogue page on `./src/WineCataloguePage.tsx`
 
 Add the following code inside the file
 
@@ -822,7 +822,7 @@ export default function WineCataloguePage() {
 
 ## Let's play: Buy some wine!
 
-Now you can see on `Trading` menu the `Wine catalog` sub menu, click on it.
+Now you can see on `Trading` menu the `Wine catalogue` sub menu, click on it.
 
 ![buy.png](./doc/buy.png)
 
