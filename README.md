@@ -71,10 +71,80 @@ const main = ([p, s]: [parameter,storage]): ret =>
      Buy: (p : [nat,address]) => [list([]),s],
      Sell: (p : [nat,nat]) => [list([]),s],
      AddAdministrator : (p : address) => {if(Set.mem(Tezos.get_sender(), s.administrators)){ return [list([]),{...s,administrators:Set.add(p, s.administrators)}]} else {return failwith("1");}} ,
-     Transfer: (p: NFT.transfer) => [list([]),s],
-     Balance_of: (p: NFT.balance_of) => [list([]),s],
-     Update_operators: (p: NFT.update_operator) => [list([]),s],
-     });
+      Transfer: (p: NFT.transfer) => {
+        const ret2: [list<operation>, NFT.storage] =
+          NFT.transfer(
+            p,
+            {
+              ledger: s.ledger,
+              metadata: s.metadata,
+              token_metadata: s.token_metadata,
+              operators: s.operators,
+              token_ids: s.token_ids
+            }
+          );
+        return [
+          ret2[0],
+          {
+            ...s,
+            ledger: ret2[1].ledger,
+            metadata: ret2[1].metadata,
+            token_metadata: ret2[1].token_metadata,
+            operators: ret2[1].operators,
+            token_ids: ret2[1].token_ids
+          }
+        ]
+      },
+      Balance_of: (p: NFT.balance_of) => {
+        const ret2: [list<operation>, NFT.storage] =
+          NFT.balance_of(
+            p,
+            {
+              ledger: s.ledger,
+              metadata: s.metadata,
+              token_metadata: s.token_metadata,
+              operators: s.operators,
+              token_ids: s.token_ids
+            }
+          );
+        return [
+          ret2[0],
+          {
+            ...s,
+            ledger: ret2[1].ledger,
+            metadata: ret2[1].metadata,
+            token_metadata: ret2[1].token_metadata,
+            operators: ret2[1].operators,
+            token_ids: ret2[1].token_ids
+          }
+        ]
+      },
+      Update_operators: (p: NFT.update_operators) => {
+        const ret2: [list<operation>, NFT.storage] =
+          NFT.update_ops(
+            p,
+            {
+              ledger: s.ledger,
+              metadata: s.metadata,
+              token_metadata: s.token_metadata,
+              operators: s.operators,
+              token_ids: s.token_ids
+            }
+          );
+        return [
+          ret2[0],
+          {
+            ...s,
+            ledger: ret2[1].ledger,
+            metadata: ret2[1].metadata,
+            token_metadata: ret2[1].token_metadata,
+            operators: ret2[1].operators,
+            token_ids: ret2[1].token_ids
+          }
+        ]
+      }
+    }
+  );
 ```
 
 Explanations:
@@ -104,7 +174,7 @@ const default_storage =
 Finally, compile the contract
 
 ```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:0.57.0 taq compile nft.jsligo
+TAQ_LIGO_IMAGE=ligolang/ligo:0.64.2 taq compile nft.jsligo
 ```
 
 ## :credit_card: Sell at an offer price
@@ -129,16 +199,98 @@ const sell = (token_id : nat,price : nat, s : storage) : ret => {
 Then call it in the `main` function to do the right business operations
 
 ```ligolang
-const main = ([p, s]: [parameter,storage]): ret =>
-    match(p, {
-     Mint: (p: [nat,bytes,bytes,bytes,bytes]) => mint(p[0],p[1],p[2],p[3],p[4],s),
-     Buy: (p : [nat,address]) => [list([]),s],
-     Sell: (p : [nat,nat]) => sell(p[0],p[1], s),
-     AddAdministrator : (p : address) => {if(Set.mem(Tezos.get_sender(), s.administrators)){ return [list([]),{...s,administrators:Set.add(p, s.administrators)}]} else {return failwith("1");}} ,
-     Transfer: (p: NFT.transfer) => [list([]),s],
-     Balance_of: (p: NFT.balance_of) => [list([]),s],
-     Update_operators: (p: NFT.update_operator) => [list([]),s],
-     });
+const main = ([p, s]: [parameter, storage]): ret =>
+  match(
+    p,
+    {
+      Mint: (p: [nat, bytes, bytes, bytes, bytes]) =>
+        mint(p[0], p[1], p[2], p[3], p[4], s),
+      Buy: (p: [nat, address]) => [list([]), s],
+      Sell: (p : [nat,nat]) => sell(p[0],p[1], s),
+      AddAdministrator: (p: address) => {
+        if (Set.mem(Tezos.get_sender(), s.administrators)) {
+          return [
+            list([]),
+            { ...s, administrators: Set.add(p, s.administrators) }
+          ]
+        } else {
+          return failwith("1")
+        }
+      },
+      Transfer: (p: NFT.transfer) => {
+        const ret2: [list<operation>, NFT.storage] =
+          NFT.transfer(
+            p,
+            {
+              ledger: s.ledger,
+              metadata: s.metadata,
+              token_metadata: s.token_metadata,
+              operators: s.operators,
+              token_ids: s.token_ids
+            }
+          );
+        return [
+          ret2[0],
+          {
+            ...s,
+            ledger: ret2[1].ledger,
+            metadata: ret2[1].metadata,
+            token_metadata: ret2[1].token_metadata,
+            operators: ret2[1].operators,
+            token_ids: ret2[1].token_ids
+          }
+        ]
+      },
+      Balance_of: (p: NFT.balance_of) => {
+        const ret2: [list<operation>, NFT.storage] =
+          NFT.balance_of(
+            p,
+            {
+              ledger: s.ledger,
+              metadata: s.metadata,
+              token_metadata: s.token_metadata,
+              operators: s.operators,
+              token_ids: s.token_ids
+            }
+          );
+        return [
+          ret2[0],
+          {
+            ...s,
+            ledger: ret2[1].ledger,
+            metadata: ret2[1].metadata,
+            token_metadata: ret2[1].token_metadata,
+            operators: ret2[1].operators,
+            token_ids: ret2[1].token_ids
+          }
+        ]
+      },
+      Update_operators: (p: NFT.update_operators) => {
+        const ret2: [list<operation>, NFT.storage] =
+          NFT.update_ops(
+            p,
+            {
+              ledger: s.ledger,
+              metadata: s.metadata,
+              token_metadata: s.token_metadata,
+              operators: s.operators,
+              token_ids: s.token_ids
+            }
+          );
+        return [
+          ret2[0],
+          {
+            ...s,
+            ledger: ret2[1].ledger,
+            metadata: ret2[1].metadata,
+            token_metadata: ret2[1].token_metadata,
+            operators: ret2[1].operators,
+            token_ids: ret2[1].token_ids
+          }
+        ]
+      }
+    }
+  );
 ```
 
 Explanations:
@@ -181,16 +333,98 @@ const buy = (token_id : nat, seller : address, s : storage) : ret => {
 Call `buy` function on main
 
 ```ligolang
-const main = ([p, s]: [parameter,storage]): ret =>
-    match(p, {
-     Mint: (p: [nat,bytes,bytes,bytes,bytes]) => mint(p[0],p[1],p[2],p[3],p[4],s),
-     Buy: (p : [nat,address]) => buy(p[0],p[1],s),
-     Sell: (p : [nat,nat]) => sell(p[0],p[1], s),
-     AddAdministrator : (p : address) => {if(Set.mem(Tezos.get_sender(), s.administrators)){ return [list([]),{...s,administrators:Set.add(p, s.administrators)}]} else {return failwith("1");}} ,
-     Transfer: (p: NFT.transfer) => [list([]),s],
-     Balance_of: (p: NFT.balance_of) => [list([]),s],
-     Update_operators: (p: NFT.update_operator) => [list([]),s],
-     });
+const main = ([p, s]: [parameter, storage]): ret =>
+  match(
+    p,
+    {
+      Mint: (p: [nat, bytes, bytes, bytes, bytes]) =>
+        mint(p[0], p[1], p[2], p[3], p[4], s),
+      Buy: (p: [nat, address]) => buy(p[0], p[1], s),
+      Sell: (p: [nat, nat]) => sell(p[0], p[1], s),
+      AddAdministrator: (p: address) => {
+        if (Set.mem(Tezos.get_sender(), s.administrators)) {
+          return [
+            list([]),
+            { ...s, administrators: Set.add(p, s.administrators) }
+          ]
+        } else {
+          return failwith("1")
+        }
+      },
+      Transfer: (p: NFT.transfer) => {
+        const ret2: [list<operation>, NFT.storage] =
+          NFT.transfer(
+            p,
+            {
+              ledger: s.ledger,
+              metadata: s.metadata,
+              token_metadata: s.token_metadata,
+              operators: s.operators,
+              token_ids: s.token_ids
+            }
+          );
+        return [
+          ret2[0],
+          {
+            ...s,
+            ledger: ret2[1].ledger,
+            metadata: ret2[1].metadata,
+            token_metadata: ret2[1].token_metadata,
+            operators: ret2[1].operators,
+            token_ids: ret2[1].token_ids
+          }
+        ]
+      },
+      Balance_of: (p: NFT.balance_of) => {
+        const ret2: [list<operation>, NFT.storage] =
+          NFT.balance_of(
+            p,
+            {
+              ledger: s.ledger,
+              metadata: s.metadata,
+              token_metadata: s.token_metadata,
+              operators: s.operators,
+              token_ids: s.token_ids
+            }
+          );
+        return [
+          ret2[0],
+          {
+            ...s,
+            ledger: ret2[1].ledger,
+            metadata: ret2[1].metadata,
+            token_metadata: ret2[1].token_metadata,
+            operators: ret2[1].operators,
+            token_ids: ret2[1].token_ids
+          }
+        ]
+      },
+      Update_operators: (p: NFT.update_operators) => {
+        const ret2: [list<operation>, NFT.storage] =
+          NFT.update_ops(
+            p,
+            {
+              ledger: s.ledger,
+              metadata: s.metadata,
+              token_metadata: s.token_metadata,
+              operators: s.operators,
+              token_ids: s.token_ids
+            }
+          );
+        return [
+          ret2[0],
+          {
+            ...s,
+            ledger: ret2[1].ledger,
+            metadata: ret2[1].metadata,
+            token_metadata: ret2[1].token_metadata,
+            operators: ret2[1].operators,
+            token_ids: ret2[1].token_ids
+          }
+        ]
+      }
+    }
+  );
 ```
 
 Explanations:
@@ -205,7 +439,7 @@ Explanations:
 We finished the smart contract implementation of this second training, let's deploy to ghostnet.
 
 ```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:0.57.0 taq compile nft.jsligo
+TAQ_LIGO_IMAGE=ligolang/ligo:0.64.2 taq compile nft.jsligo
 taq deploy nft.tz -e "testing"
 ```
 
@@ -213,7 +447,7 @@ taq deploy nft.tz -e "testing"
 ┌──────────┬──────────────────────────────────────┬───────┬──────────────────┬────────────────────────────────┐
 │ Contract │ Address                              │ Alias │ Balance In Mutez │ Destination                    │
 ├──────────┼──────────────────────────────────────┼───────┼──────────────────┼────────────────────────────────┤
-│ nft.tz   │ KT1PLvVGaM4YE1qLSdLZUZ1EhozqzYUQ1xed │ nft   │ 0                │ https://ghostnet.ecadinfra.com │
+│ nft.tz   │ KT1J9QpWT8awyYiFJSpEWqZtVYWKVrbm1idY │ nft   │ 0                │ https://ghostnet.ecadinfra.com │
 └──────────┴──────────────────────────────────────┴───────┴──────────────────┴────────────────────────────────┘
 ```
 
