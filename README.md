@@ -174,7 +174,7 @@ const default_storage =
 Finally, compile the contract
 
 ```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:0.64.2 taq compile nft.jsligo
+TAQ_LIGO_IMAGE=ligolang/ligo:0.65.0 taq compile nft.jsligo
 ```
 
 ## :credit_card: Sell at an offer price
@@ -439,7 +439,7 @@ Explanations:
 We finished the smart contract implementation of this second training, let's deploy to ghostnet.
 
 ```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:0.64.2 taq compile nft.jsligo
+TAQ_LIGO_IMAGE=ligolang/ligo:0.65.0 taq compile nft.jsligo
 taq deploy nft.tz -e "testing"
 ```
 
@@ -447,7 +447,7 @@ taq deploy nft.tz -e "testing"
 ┌──────────┬──────────────────────────────────────┬───────┬──────────────────┬────────────────────────────────┐
 │ Contract │ Address                              │ Alias │ Balance In Mutez │ Destination                    │
 ├──────────┼──────────────────────────────────────┼───────┼──────────────────┼────────────────────────────────┤
-│ nft.tz   │ KT1J9QpWT8awyYiFJSpEWqZtVYWKVrbm1idY │ nft   │ 0                │ https://ghostnet.ecadinfra.com │
+│ nft.tz   │ KT1Vcha6szsA3sRpeyszPJ8bzHQYigdS7NR3 │ nft   │ 0                │ https://ghostnet.ecadinfra.com │
 └──────────┴──────────────────────────────────────┴───────┴──────────────────┴────────────────────────────────┘
 ```
 
