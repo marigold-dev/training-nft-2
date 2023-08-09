@@ -65,7 +65,7 @@ Also update the initial storage on file `nft.storageList.jsligo` to add `offers`
 Finally, compile the contract
 
 ```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:0.71.0 taq compile nft.jsligo
+TAQ_LIGO_IMAGE=ligolang/ligo:0.71.1 taq compile nft.jsligo
 ```
 
 ## :credit_card: Sell at an offer price
