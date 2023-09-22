@@ -58,14 +58,14 @@ Also update the initial storage on file `nft.storageList.jsligo` to add `offers`
 
 ```ligolang
 ...
-   offers: Map.empty as map<nat,offer>,
+   offers: Map.empty as map<nat,Contract.offer>,
 ...
 ```
 
 Finally, compile the contract
 
 ```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:0.71.1 taq compile nft.jsligo
+TAQ_LIGO_IMAGE=ligolang/ligo:0.73.0 taq compile nft.jsligo
 ```
 
 ## :credit_card: Sell at an offer price
@@ -187,7 +187,7 @@ Explanations:
 We finished the smart contract implementation of this second training, let's deploy to ghostnet.
 
 ```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:0.71.0 taq compile nft.jsligo
+TAQ_LIGO_IMAGE=ligolang/ligo:0.73.0 taq compile nft.jsligo
 taq deploy nft.tz -e "testing"
 ```
 
