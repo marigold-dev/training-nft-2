@@ -1,6 +1,8 @@
 import { InfoOutlined } from "@mui/icons-material";
 import SellIcon from "@mui/icons-material/Sell";
 
+import * as api from "@tzkt/sdk-api";
+
 import {
   Box,
   Button,
@@ -43,13 +45,17 @@ type Offer = {
 };
 
 export default function OffersPage() {
+  api.defaults.baseUrl = "https://api.ghostnet.tzkt.io";
+
   const [selectedTokenId, setSelectedTokenId] = React.useState<number>(0);
   const [currentPageIndex, setCurrentPageIndex] = useState<number>(1);
 
-  let [offersTokenIDMap, setOffersTokenIDMap] = React.useState<Map<nat, Offer>>(
-    new Map()
+  let [offersTokenIDMap, setOffersTokenIDMap] = React.useState<
+    Map<string, Offer>
+  >(new Map());
+  let [ownerTokenIds, setOwnerTokenIds] = React.useState<Set<string>>(
+    new Set()
   );
-  let [ownerTokenIds, setOwnerTokenIds] = React.useState<Set<nat>>(new Set());
 
   const {
     nftContrat,
@@ -82,20 +88,31 @@ export default function OffersPage() {
       ownerTokenIds = new Set();
       offersTokenIDMap = new Map();
 
-      await Promise.all(
-        storage.token_ids.map(async (token_id) => {
-          let owner = await storage.ledger.get(token_id);
-          if (owner === userAddress) {
-            ownerTokenIds.add(token_id);
+      const token_metadataBigMapId = (
+        storage.token_metadata as unknown as { id: BigNumber }
+      ).id.toNumber();
 
-            const ownerOffers = await storage.offers.get(token_id);
-            if (ownerOffers) offersTokenIDMap.set(token_id, ownerOffers);
+      const token_ids = await api.bigMapsGetKeys(token_metadataBigMapId, {
+        micheline: "Json",
+        active: true,
+      });
+
+      await Promise.all(
+        token_ids.map(async (token_idKey) => {
+          const token_idNat = new BigNumber(token_idKey.key) as nat;
+
+          let owner = await storage.ledger.get(token_idNat);
+          if (owner === userAddress) {
+            ownerTokenIds.add(token_idKey.key);
+
+            const ownerOffers = await storage.offers.get(token_idNat);
+            if (ownerOffers) offersTokenIDMap.set(token_idKey.key, ownerOffers);
 
             console.log(
               "found for " +
                 owner +
                 " on token_id " +
-                token_id +
+                token_idKey.key +
                 " with balance " +
                 1
             );
@@ -202,9 +219,8 @@ export default function OffersPage() {
                             </Typography>
                             <Typography>
                               {"Description : " +
-                                nftContratTokenMetadataMap.get(
-                                  token_id.toNumber()
-                                )?.description}
+                                nftContratTokenMetadataMap.get(token_id)
+                                  ?.description}
                             </Typography>
                           </Box>
                         }
@@ -212,16 +228,14 @@ export default function OffersPage() {
                         <InfoOutlined />
                       </Tooltip>
                     }
-                    title={
-                      nftContratTokenMetadataMap.get(token_id.toNumber())?.name
-                    }
+                    title={nftContratTokenMetadataMap.get(token_id)?.name}
                   />
                   <CardMedia
                     sx={{ width: "auto", marginLeft: "33%" }}
                     component="img"
                     height="100px"
                     image={nftContratTokenMetadataMap
-                      .get(token_id.toNumber())
+                      .get(token_id)
                       ?.thumbnailUri?.replace(
                         "ipfs://",
                         "https://gateway.pinata.cloud/ipfs/"
@@ -261,7 +275,7 @@ export default function OffersPage() {
                       <form
                         style={{ width: "100%" }}
                         onSubmit={(values) => {
-                          setSelectedTokenId(token_id.toNumber());
+                          setSelectedTokenId(Number(token_id));
                           formik.handleSubmit(values);
                         }}
                       >
