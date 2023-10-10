@@ -55,7 +55,7 @@ Update the initial storage on file `nft.storageList.jsligo` to initialize `offer
 ```ligolang
 #import "nft.jsligo" "Contract"
 
-const default_storage = {
+const default_storage : Contract.storage = {
     administrators: Set.literal(
         list(["tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" as address])
     ) as set<address>,
