@@ -579,17 +579,13 @@ Explanation :
 
 ## Let's play : Sell
 
-1. Connect with your wallet and choose `alice` account (or one of the administrators you set on the smart contract earlier). You are redirected to the Administration /mint page as there is no NFT minted yet
-
-2. Enter these values on the form for example :
-
-- `name`: Saint Emilion - Franc la Rose
-- `symbol`: SEMIL
-- `description`: Grand cru 2007
-
-3. Click on `Upload an image` and select a bottle picture on your computer
-
-4. Click on the Mint button
+- Connect with your wallet and choose `alice` account (or one of the administrators you set on the smart contract earlier). You are redirected to the Administration /mint page as there is no NFT minted yet
+- Enter these values on the form for example :
+  - `name`: Saint Emilion - Franc la Rose
+  - `symbol`: SEMIL
+  - `description`: Grand cru 2007
+- Click on `Upload an image` and select a bottle picture on your computer
+- Click on the Mint button
 
 Your picture will be pushed to IPFS and displayed, then your wallet ask you to sign the mint operation.
 
