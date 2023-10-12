@@ -6,7 +6,7 @@ Training n°2 for NFT marketplace
 
 ![https://img.etimg.com/thumb/msid-71286763,width-1070,height-580,overlay-economictimes/photo.jpg](https://img.etimg.com/thumb/msid-71286763,width-1070,height-580,overlay-economictimes/photo.jpg)
 
-This time we will add the ability to buy and sell an NFT!
+This time, buy and sell an NFT will be added !
 
 Keep your code from the previous lesson or get the solution [here](https://github.com/marigold-dev/training-nft-1/tree/main/solution)
 
@@ -147,11 +147,11 @@ Explanation:
 
 - User must have enough tokens _(wine bottles)_ to place an offer
 - the seller will set the NFT marketplace smart contract as an operator. When the buyer sends his money to buy the NFT, the smart contract will change the NFT ownership _(it is not interactive with the seller, the martketplace will do it on behalf of the seller based on the offer data)_
-- we update the `storage` to publish the offer
+- `storage` is updated with `offer` field
 
 ### :credit_card: Buy a bottle on the marketplace
 
-Now that we have offers available on the marketplace, let's buy bottles!
+Now that there are offers available on the marketplace, let's buy bottles!
 
 Edit the smart contract to add the `buy` feature
 
@@ -208,7 +208,7 @@ Explanation:
 
 ### Compile and deploy
 
-We finished the smart contract implementation of this second training, let's deploy to ghostnet.
+Smart contract implementation of this second training is finished, let's deploy to ghostnet.
 
 ```bash
 TAQ_LIGO_IMAGE=ligolang/ligo:1.0.0 taq compile nft.jsligo
@@ -223,7 +223,7 @@ taq deploy nft.tz -e "testing"
 └──────────┴──────────────────────────────────────┴───────┴──────────────────┴────────────────────────────────┘
 ```
 
-**We have implemented and deployed the smart contract (backend)!**
+**Smart contract (backend) is implmented and deployed!**
 
 ## :performing_arts: NFT Marketplace front
 
@@ -574,8 +574,8 @@ export default function OffersPage() {
 Explanation :
 
 - the template will display all owned NFTs. Only NFTs belonging to the logged user are selected
-- for each NFT, we have a form to make an offer at a price
-- if you do an offer, it calls the `sell` function and the smart contract entrypoint `nftContrat?.methods.sell(BigNumber(token_id) as nat,BigNumber(price * 1000000) as nat).send()`. We multiply the XTZ price by 10^6 because the smart contract manipulates mutez.
+- for each NFT, there is a form to make an offer at a price
+- if you do an offer, it calls the `sell` function and the smart contract entrypoint `nftContrat?.methods.sell(BigNumber(token_id) as nat,BigNumber(price * 1000000) as nat).send()`. Multiply the XTZ price by 10^6 because the smart contract manipulates mutez.
 
 ## Let's play : Sell
 
