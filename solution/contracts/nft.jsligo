@@ -158,7 +158,7 @@ const sell = ([token_id, price]: [nat, nat], s: storage): ret => {
   //need to allow the contract itself to be an operator on behalf of the seller
 
   const newOperators =
-    FA2Impl.Sidecar.add_operator(
+    FA2Impl.NFT.add_operator(
       s.operators,
       Tezos.get_source(),
       Tezos.get_self_address(),
@@ -205,7 +205,7 @@ const buy = ([token_id, seller]: [nat, address], s: storage): ret => {
         //transfer tokens from seller to buyer
 
         const ledger =
-          FA2Impl.Sidecar.transfer_token_from_user_to_user(
+          FA2Impl.NFT.transfer_token_from_user_to_user(
             s.ledger,
             token_id,
             seller,
