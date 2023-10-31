@@ -8,25 +8,20 @@
 
 #import "../common/tzip16.datatypes.jsligo" "TZIP16"
 
+export namespace NFT implements TZIP12Interface.FA2{
+   export type ledger = big_map<nat, address>;
+   export type operators = big_map<[address, address], set<nat>>; //[owner,operator]
 
-
-export namespace NFT implements TZIP12Interface.FA2  {
-    
-  export type ledger = big_map<nat, address>;
-  export  type operators = big_map<[address, address], set<nat>>; //[owner,operator]
-
-  export type storage = {
+   export type storage = {
       ledger: ledger,
       operators: operators,
       token_metadata: TZIP12.tokenMetadata,
       metadata: TZIP16.metadata
    };
-
    type ret = [list<operation>, storage];
+   //** LIGOFA_NFT
 
-//** LIGOFA_NFT
-
-   export  const assert_authorisation = (
+   export const assert_authorisation = (
       operators: operators,
       from_: address,
       token_id: nat
@@ -70,7 +65,7 @@ export namespace NFT implements TZIP12Interface.FA2  {
          return Big_map.update([owner, operator], Some(auth_tokens), operators)
       }
    };
-   export  const remove_operator = (
+   export const remove_operator = (
       operators: operators,
       owner: address,
       operator: address,
@@ -101,11 +96,7 @@ export namespace NFT implements TZIP12Interface.FA2  {
    }
    //  ledger 
 
-   export  const is_owner_of = (
-      ledger: ledger,
-      token_id: nat,
-      owner: address
-   ): bool => {
+   export const is_owner_of = (ledger: ledger, token_id: nat, owner: address): bool => {
       const current_owner = Option.unopt(Big_map.find_opt(token_id, ledger));
       return (current_owner == owner)
    };
@@ -118,7 +109,7 @@ export namespace NFT implements TZIP12Interface.FA2  {
          is_owner_of(ledger, token_id, owner),
          Errors.ins_balance
       );
-   export  const transfer_token_from_user_to_user = (
+   export const transfer_token_from_user_to_user = (
       ledger: ledger,
       token_id: nat,
       from_: address,
@@ -127,19 +118,12 @@ export namespace NFT implements TZIP12Interface.FA2  {
       assert_owner_of(ledger, token_id, from_);
       return Big_map.update(token_id, Some(to_), ledger)
    }
-   export  const set_ledger = (s: storage, ledger: ledger): 
-   storage =>
+   export const set_ledger = (s: storage, ledger: ledger): storage =>
       ({ ...s, ledger: ledger });
-   export  const get_operators = (s: storage): operators =>
-      s.operators;
-   export  const set_operators = (
-      s: storage,
-      operators: operators
-   ): storage =>
+   export const get_operators = (s: storage): operators => s.operators;
+   export const set_operators = (s: storage, operators: operators): storage =>
       ({ ...s, operators: operators });
-
-//** TZIP12Interface.FA2
-
+   //** TZIP12Interface.FA2
    //  operators 
    /**
 * Check if the intented transfer is sent from the same sender as from field, otherwise check if the sender is part of the operator authorized to receive this token
@@ -244,8 +228,7 @@ export namespace NFT implements TZIP12Interface.FA2  {
       return (Set.mem(op.token_id, authorized) || op.owner == op.operator)
    };
    @view
-   const token_metadata = (p: nat, s: storage): TZIP12.
-   tokenMetadataData => {
+   const token_metadata = (p: nat, s: storage): TZIP12.tokenMetadataData => {
       return match(Big_map.find_opt(p, s.token_metadata)) {
          when (Some(data)):
             data
