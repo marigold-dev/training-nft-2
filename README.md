@@ -96,7 +96,7 @@ const default_storage : Contract.storage = {
 Finally, compile the contract
 
 ```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:1.0.0 taq compile nft.jsligo
+TAQ_LIGO_IMAGE=ligolang/ligo:1.1.0 taq compile nft.jsligo
 ```
 
 ### Sell at an offer price
@@ -213,7 +213,7 @@ Explanation:
 Smart contract implementation of this second training is finished, let's deploy to ghostnet.
 
 ```bash
-TAQ_LIGO_IMAGE=ligolang/ligo:1.0.0 taq compile nft.jsligo
+TAQ_LIGO_IMAGE=ligolang/ligo:1.1.0 taq compile nft.jsligo
 taq deploy nft.tz -e "testing"
 ```
 
