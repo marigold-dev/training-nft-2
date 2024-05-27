@@ -1,42 +1,32 @@
-#import "@ligo/fa/lib/fa2/nft/nft.impl.jsligo" "FA2Impl"
+#import "@ligo/fa/lib/fa2/nft/extendable_nft.impl.jsligo" "FA2Impl"
 
 /* ERROR MAP FOR UI DISPLAY or TESTS
-       const errorMap : map<string,string> = Map.literal(list([
-         ["0", "Enter a positive and not null amount"],
-         ["1", "Operation not allowed, you need to be administrator"],
-         ["2", "You cannot sell more than your current balance"],
-         ["3", "Cannot find the offer you entered for buying"],
-         ["4", "You entered a quantity to buy than is more than the offer quantity"],
-         ["5", "Not enough funds, you need to pay at least quantity * offer price to get the tokens"],
-         ["6", "Cannot find the contract relative to implicit address"],
-       ]));
-   */
-
+          const errorMap : map<string,string> = Map.literal(list([
+            ["0", "Enter a positive and not null amount"],
+            ["1", "Operation not allowed, you need to be administrator"],
+            ["2", "You cannot sell more than your current balance"],
+            ["3", "Cannot find the offer you entered for buying"],
+            ["4", "You entered a quantity to buy than is more than the offer quantity"],
+            ["5", "Not enough funds, you need to pay at least quantity * offer price to get the tokens"],
+            ["6", "Cannot find the contract relative to implicit address"],
+          ]));
+      */
 export type offer = { owner: address, price: nat };
 
-export type storage = {
+export type Extension = {
   administrators: set<address>,
   offers: map<nat, offer>, //user sells an offer
-  ledger: FA2Impl.NFT.ledger,
-  metadata: FA2Impl.TZIP16.metadata,
-  token_metadata: FA2Impl.TZIP12.tokenMetadata,
-  operators: FA2Impl.NFT.operators
+
 };
+
+export type storage = FA2Impl.storage<Extension>; // extension administrators
+
 
 type ret = [list<operation>, storage];
 
 @entry
 const transfer = (p: FA2Impl.TZIP12.transfer, s: storage): ret => {
-  const ret2: [list<operation>, FA2Impl.NFT.storage] =
-    FA2Impl.NFT.transfer(
-      p,
-      {
-        ledger: s.ledger,
-        metadata: s.metadata,
-        token_metadata: s.token_metadata,
-        operators: s.operators,
-      }
-    );
+  const ret2: [list<operation>, storage] = FA2Impl.transfer(p, s);
   return [
     ret2[0],
     {
@@ -51,16 +41,7 @@ const transfer = (p: FA2Impl.TZIP12.transfer, s: storage): ret => {
 
 @entry
 const balance_of = (p: FA2Impl.TZIP12.balance_of, s: storage): ret => {
-  const ret2: [list<operation>, FA2Impl.NFT.storage] =
-    FA2Impl.NFT.balance_of(
-      p,
-      {
-        ledger: s.ledger,
-        metadata: s.metadata,
-        token_metadata: s.token_metadata,
-        operators: s.operators,
-      }
-    );
+  const ret2: [list<operation>, storage] = FA2Impl.balance_of(p, s);
   return [
     ret2[0],
     {
@@ -75,16 +56,7 @@ const balance_of = (p: FA2Impl.TZIP12.balance_of, s: storage): ret => {
 
 @entry
 const update_operators = (p: FA2Impl.TZIP12.update_operators, s: storage): ret => {
-  const ret2: [list<operation>, FA2Impl.NFT.storage] =
-    FA2Impl.NFT.update_operators(
-      p,
-      {
-        ledger: s.ledger,
-        metadata: s.metadata,
-        token_metadata: s.token_metadata,
-        operators: s.operators,
-      }
-    );
+  const ret2: [list<operation>, storage] = FA2Impl.update_operators(p, s);
   return [
     ret2[0],
     {
@@ -108,7 +80,9 @@ const mint = (
   ],
   s: storage
 ): ret => {
-  if (! Set.mem(Tezos.get_sender(), s.administrators)) return failwith("1");
+  if (! Set.mem(Tezos.get_sender(), s.extension.administrators)) return failwith(
+    "1"
+  );
   const token_info: map<string, bytes> =
     Map.literal(
       list(
@@ -129,13 +103,13 @@ const mint = (
     {
       ...s,
       ledger: Big_map.add(token_id, Tezos.get_sender(), s.ledger) as
-        FA2Impl.NFT.ledger,
+        FA2Impl.ledger,
       token_metadata: Big_map.add(
         token_id,
         { token_id: token_id, token_info: token_info },
         s.token_metadata
       ),
-      operators: Big_map.empty as FA2Impl.NFT.operators,
+      operators: Big_map.empty as FA2Impl.operators,
     }
   ]
 };
@@ -143,38 +117,29 @@ const mint = (
 @entry
 const sell = ([token_id, price]: [nat, nat], s: storage): ret => {
   //check balance of seller
-
-  const sellerBalance =
-    FA2Impl.NFT.get_balance(
-      [Tezos.get_source(), token_id],
-      {
-        ledger: s.ledger,
-        metadata: s.metadata,
-        operators: s.operators,
-        token_metadata: s.token_metadata,
-      }
-    );
+  const sellerBalance = FA2Impl.get_balance([Tezos.get_source(), token_id], s);
   if (sellerBalance != (1 as nat)) return failwith("2");
   //need to allow the contract itself to be an operator on behalf of the seller
-
   const newOperators =
-    FA2Impl.NFT.add_operator(
+    FA2Impl.add_operator(
       s.operators,
       Tezos.get_source(),
       Tezos.get_self_address(),
       token_id
     );
   //DECISION CHOICE: if offer already exists, we just override it
-
   return [
     list([]) as list<operation>,
     {
       ...s,
-      offers: Map.add(
-        token_id,
-        { owner: Tezos.get_source(), price: price },
-        s.offers
-      ),
+      extension: {
+        ...s.extension,
+        offers: Map.add(
+          token_id,
+          { owner: Tezos.get_source(), price: price },
+          s.extension.offers
+        )
+      },
       operators: newOperators
     }
   ]
@@ -183,19 +148,16 @@ const sell = ([token_id, price]: [nat, nat], s: storage): ret => {
 @entry
 const buy = ([token_id, seller]: [nat, address], s: storage): ret => {
   //search for the offer
-
-  return match(Map.find_opt(token_id, s.offers)) {
+  return match(Map.find_opt(token_id, s.extension.offers)) {
     when (None()):
       failwith("3")
     when (Some(offer)):
       do {
         //check if amount have been paid enough
-
         if (Tezos.get_amount() < offer.price * (1 as mutez)) return failwith(
           "5"
         );
         // prepare transfer of XTZ to seller
-
         const op =
           Tezos.transaction(
             unit,
@@ -203,20 +165,23 @@ const buy = ([token_id, seller]: [nat, address], s: storage): ret => {
             Tezos.get_contract_with_error(seller, "6")
           );
         //transfer tokens from seller to buyer
-
         const ledger =
-          FA2Impl.NFT.transfer_token_from_user_to_user(
+          FA2Impl.transfer_token_from_user_to_user(
             s.ledger,
             token_id,
             seller,
             Tezos.get_source()
           );
         //remove offer
-
         return [
           list([op]) as list<operation>,
           {
-            ...s, offers: Map.update(token_id, None(), s.offers), ledger: ledger
+            ...s,
+            ledger: ledger,
+            extension: {
+              ...s.extension,
+              offers: Map.update(token_id, None(), s.extension.offers),
+            }
           }
         ]
       }

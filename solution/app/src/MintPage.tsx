@@ -69,7 +69,10 @@ export default function MintPage() {
   const [formOpen, setFormOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    if (storage && storage.administrators.indexOf(userAddress! as address) < 0)
+    if (
+      storage &&
+      storage.extension.administrators.indexOf(userAddress! as address) < 0
+    )
       setFormOpen(false);
     else setFormOpen(true);
   }, [userAddress]);
@@ -182,7 +185,10 @@ export default function MintPage() {
     <Paper>
       {storage ? (
         <Button
-          disabled={storage.administrators.indexOf(userAddress! as address) < 0}
+          disabled={
+            storage.extension.administrators.indexOf(userAddress! as address) <
+            0
+          }
           sx={{
             p: 1,
             position: "absolute",
@@ -193,7 +199,9 @@ export default function MintPage() {
           onClick={toggleDrawer(!formOpen)}
         >
           {" Mint Form " +
-            (storage!.administrators.indexOf(userAddress! as address) < 0
+            (storage!.extension.administrators.indexOf(
+              userAddress! as address
+            ) < 0
               ? " (You are not admin)"
               : "")}
           <OpenWithIcon />

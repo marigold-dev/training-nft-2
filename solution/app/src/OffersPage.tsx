@@ -105,7 +105,7 @@ export default function OffersPage() {
           if (owner === userAddress) {
             ownerTokenIds.add(token_idKey.key);
 
-            const ownerOffers = await storage.offers.get(token_idNat);
+            const ownerOffers = await storage.extension.offers.get(token_idNat);
             if (ownerOffers) offersTokenIDMap.set(token_idKey.key, ownerOffers);
 
             console.log(
